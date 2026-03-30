@@ -1,17 +1,7 @@
-<div id="<%= dom_id message %>">
-  <div>
-    <strong>Content:</strong>
-    <%= message.content %>
+<div id="<%= dom_id message %>" class="flex flex-col gap-0.5">
+  <div class="flex items-baseline gap-2">
+    <span class="text-sm font-semibold text-slate-800"><%= message.user.name %></span>
+    <span class="text-xs text-slate-400"><%= message.created_at.strftime("%H:%M") %></span>
   </div>
-
-  <div>
-    <strong>User:</strong>
-    <%= message.user_id %>
-  </div>
-
-  <div>
-    <strong>Event:</strong>
-    <%= message.event_id %>
-  </div>
-
+  <p class="text-sm text-slate-600 leading-relaxed"><%= message.content %></p>
 </div>

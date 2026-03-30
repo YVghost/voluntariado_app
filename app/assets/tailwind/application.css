@@ -1,0 +1,17 @@
+@import "tailwindcss";
+
+@theme {
+  --color-wine-50:  #fdf2f3;
+  --color-wine-100: #fce4e6;
+  --color-wine-200: #fbced2;
+  --color-wine-300: #f6a4ac;
+  --color-wine-400: #ee717d;
+  --color-wine-500: #e24355;
+  --color-wine-600: #ce2538;
+  --color-wine-700: #ad1a2b;
+  --color-wine-800: #722f37;
+  --color-wine-900: #5a2429;
+  --color-wine-950: #3b1318;
+
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+}

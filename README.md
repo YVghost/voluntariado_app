@@ -22,3 +22,6 @@ Things you may want to cover:
 * Deployment instructions
 
 * ...
+divice para auth 
+ActionCable + Turbo Streams. chat 
+Stimulus + lat/lng geoloca

@@ -1,31 +1,85 @@
 <!DOCTYPE html>
-<html>
+<html class="h-full bg-slate-50">
   <head>
     <title>Voluntariado App</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
+    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
 
-  <body>
-    <nav style="padding: 10px; background: #eee;">
-      <% if user_signed_in? %>
-        Bienvenido <%= current_user.name %> |
+  <body class="h-full font-sans text-slate-800 antialiased">
 
-        <%= link_to "Eventos", events_path %> |
-        <%= link_to "Organizaciones", organizations_path %> |
-        <%= link_to "Salir", destroy_user_session_path, method: :delete %>
-      <% else %>
-        <%= link_to "Login", new_user_session_path %> |
-        <%= link_to "Registro", new_user_registration_path %>
+    <%# Navbar %>
+    <header class="bg-wine-900 shadow-md">
+      <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <div class="flex h-16 items-center justify-between">
+
+          <%# Logo / Brand %>
+          <div class="flex items-center gap-2">
+            <span class="text-wine-300 text-xl font-bold tracking-tight">♦ Voluntariado</span>
+          </div>
+
+          <%# Nav links %>
+          <nav class="flex items-center gap-6 text-sm font-medium">
+            <% if user_signed_in? %>
+              <%= turbo_stream_from "notifications_#{current_user.id}" %>
+
+              <%= link_to "Eventos", events_path,
+                    class: "text-slate-200 hover:text-white transition-colors" %>
+              <%= link_to "Organizaciones", organizations_path,
+                    class: "text-slate-200 hover:text-white transition-colors" %>
+
+              <%= link_to notifications_path,
+                    class: "relative text-slate-200 hover:text-white transition-colors" do %>
+                Notificaciones
+                <span id="notifications_badge">
+                  <% count = current_user.notifications.unread.count %>
+                  <% if count > 0 %>
+                    <span class="ml-1 inline-flex items-center justify-center rounded-full bg-wine-500 px-2 py-0.5 text-xs font-bold text-white">
+                      <%= count %>
+                    </span>
+                  <% end %>
+                </span>
+              <% end %>
+
+              <span class="text-slate-400 text-xs"><%= current_user.name %></span>
+
+              <%= button_to "Salir", destroy_user_session_path, method: :delete,
+                    class: "rounded bg-wine-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-wine-600 transition-colors cursor-pointer" %>
+            <% else %>
+              <%= link_to "Iniciar sesión", new_user_session_path,
+                    class: "text-slate-200 hover:text-white transition-colors" %>
+              <%= link_to "Registrarse", new_user_registration_path,
+                    class: "rounded bg-wine-600 px-4 py-2 text-sm font-semibold text-white hover:bg-wine-500 transition-colors" %>
+            <% end %>
+          </nav>
+
+        </div>
+      </div>
+    </header>
+
+    <%# Flash messages %>
+    <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 pt-4 space-y-2">
+      <% if notice %>
+        <div class="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
+          <span class="font-semibold">✓</span> <%= notice %>
+        </div>
       <% end %>
-    </nav>
+      <% if alert %>
+        <div class="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+          <span class="font-semibold">!</span> <%= alert %>
+        </div>
+      <% end %>
+    </div>
 
-    <hr>
+    <%# Main content %>
+    <main class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-8">
+      <%= yield %>
+    </main>
 
-    <%= yield %>
   </body>
 </html>

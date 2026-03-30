@@ -6,8 +6,11 @@ class User < ApplicationRecord
   # Roles
   enum :role, { admin: 0, organizador: 1, voluntario: 2 }
 
+  validates :name, presence: true
+
   # Relaciones
   has_many :enrollments, dependent: :destroy
   has_many :events, through: :enrollments
   has_many :messages, dependent: :destroy
+  has_many :notifications, dependent: :destroy
 end

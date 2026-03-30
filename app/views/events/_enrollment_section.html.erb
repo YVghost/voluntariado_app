@@ -1,0 +1,42 @@
+<div id="enrollment_section">
+  <% if enrollment.nil? %>
+    <%= button_to "Inscribirme", event_enrollments_path(event), method: :post,
+          class: "w-full rounded-lg bg-wine-800 px-4 py-2 text-sm font-semibold text-white hover:bg-wine-700 transition-colors cursor-pointer" %>
+
+  <% elsif enrollment.cancelado? %>
+    <p class="text-sm text-slate-500 mb-3">Cancelaste tu inscripción.</p>
+    <%= button_to "Volver a inscribirme", event_enrollments_path(event), method: :post,
+          class: "w-full rounded-lg bg-wine-800 px-4 py-2 text-sm font-semibold text-white hover:bg-wine-700 transition-colors cursor-pointer" %>
+
+  <% elsif enrollment.inscrito? %>
+    <div class="mb-4 flex items-center gap-2 rounded-lg bg-green-50 border border-green-200 px-3 py-2 text-sm text-green-700">
+      <span>✓</span> Estás inscrito
+    </div>
+
+    <%= form_with url: check_in_event_enrollment_path(event, enrollment), method: :patch,
+                  data: { controller: "check-in" } do |f| %>
+      <%= f.hidden_field :latitude,  data: { "check-in-target": "latitude" } %>
+      <%= f.hidden_field :longitude, data: { "check-in-target": "longitude" } %>
+
+      <p data-check-in-target="status" class="text-xs text-slate-400 mb-2"></p>
+
+      <%= f.button "Hacer check-in",
+            type: "button",
+            data: { "check-in-target": "button", action: "click->check-in#check" },
+            class: "w-full rounded-lg bg-slate-800 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700 transition-colors cursor-pointer mb-3" %>
+    <% end %>
+
+    <%= button_to "Cancelar inscripción", event_enrollment_path(event, enrollment), method: :delete,
+          data: { turbo_confirm: "¿Seguro que quieres cancelar?" },
+          class: "w-full rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-500 hover:bg-slate-50 transition-colors cursor-pointer" %>
+
+  <% elsif enrollment.asistio? %>
+    <div class="rounded-lg bg-wine-50 border border-wine-200 px-4 py-3 text-sm space-y-1">
+      <p class="font-semibold text-wine-800">✓ Check-in realizado</p>
+      <p class="text-slate-500">Hora: <%= enrollment.check_in_time.strftime("%H:%M") %></p>
+      <% if enrollment.latitude.present? %>
+        <p class="text-slate-500 text-xs">📍 <%= enrollment.latitude.round(5) %>, <%= enrollment.longitude.round(5) %></p>
+      <% end %>
+    </div>
+  <% end %>
+</div>

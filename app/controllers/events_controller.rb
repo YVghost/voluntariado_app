@@ -1,70 +1,64 @@
 class EventsController < ApplicationController
-  before_action :set_event, only: %i[ show edit update destroy ]
+  before_action :set_event, only: %i[ show edit update destroy finalizar ]
 
-  # GET /events or /events.json
   def index
     @events = Event.all
+    authorize Event
   end
 
-  # GET /events/1 or /events/1.json
   def show
+    authorize @event
   end
 
-  # GET /events/new
   def new
     @event = Event.new
+    authorize @event
   end
 
-  # GET /events/1/edit
   def edit
+    authorize @event
   end
 
-  # POST /events or /events.json
   def create
     @event = Event.new(event_params)
+    authorize @event
 
-    respond_to do |format|
-      if @event.save
-        format.html { redirect_to @event, notice: "Event was successfully created." }
-        format.json { render :show, status: :created, location: @event }
-      else
-        format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @event.errors, status: :unprocessable_entity }
-      end
+    if @event.save
+      redirect_to @event, notice: "Evento creado correctamente."
+    else
+      render :new, status: :unprocessable_entity
     end
   end
 
-  # PATCH/PUT /events/1 or /events/1.json
   def update
-    respond_to do |format|
-      if @event.update(event_params)
-        format.html { redirect_to @event, notice: "Event was successfully updated.", status: :see_other }
-        format.json { render :show, status: :ok, location: @event }
-      else
-        format.html { render :edit, status: :unprocessable_entity }
-        format.json { render json: @event.errors, status: :unprocessable_entity }
-      end
+    authorize @event
+
+    if @event.update(event_params)
+      redirect_to @event, notice: "Evento actualizado correctamente.", status: :see_other
+    else
+      render :edit, status: :unprocessable_entity
     end
   end
 
-  # DELETE /events/1 or /events/1.json
   def destroy
+    authorize @event
     @event.destroy!
+    redirect_to events_path, notice: "Evento eliminado.", status: :see_other
+  end
 
-    respond_to do |format|
-      format.html { redirect_to events_path, notice: "Event was successfully destroyed.", status: :see_other }
-      format.json { head :no_content }
-    end
+  def finalizar
+    authorize @event, :update?
+    @event.finalizado!
+    redirect_to @event, notice: "Evento finalizado.", status: :see_other
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_event
-      @event = Event.find(params.expect(:id))
-    end
 
-    # Only allow a list of trusted parameters through.
-    def event_params
-      params.expect(event: [ :title, :description, :date, :status, :location, :organization_id ])
-    end
+  def set_event
+    @event = Event.find(params.expect(:id))
+  end
+
+  def event_params
+    params.expect(event: [ :title, :description, :date, :status, :location, :organization_id ])
+  end
 end

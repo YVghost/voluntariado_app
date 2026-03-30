@@ -1,0 +1,8 @@
+<%= turbo_frame_tag :message_form do %>
+  <%= form_with url: event_messages_path(event), method: :post, class: "flex gap-2" do |f| %>
+    <%= f.text_field :message, name: "message[content]", placeholder: "Escribe un mensaje...",
+          class: "flex-1 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-wine-300 focus:border-wine-400 transition" %>
+    <%= f.submit "Enviar",
+          class: "rounded-lg bg-wine-800 px-4 py-2 text-sm font-semibold text-white hover:bg-wine-700 transition-colors cursor-pointer" %>
+  <% end %>
+<% end %>

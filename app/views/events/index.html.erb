@@ -1,16 +1,36 @@
-<p style="color: green"><%= notice %></p>
-
-<% content_for :title, "Events" %>
-
-<h1>Events</h1>
-
-<div id="events">
-  <% @events.each do |event| %>
-    <%= render event %>
-    <p>
-      <%= link_to "Show this event", event %>
-    </p>
+<div class="flex items-center justify-between mb-8">
+  <h1 class="text-2xl font-bold text-slate-900">Eventos</h1>
+  <% if policy(Event).create? %>
+    <%= link_to "＋ Nuevo evento", new_event_path,
+          class: "rounded-lg bg-wine-800 px-4 py-2 text-sm font-semibold text-white hover:bg-wine-700 transition-colors" %>
   <% end %>
 </div>
 
-<%= link_to "New event", new_event_path %>
+<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+  <% @events.each do |event| %>
+    <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm hover:shadow-md transition-shadow">
+      <div class="flex items-start justify-between mb-3">
+        <h2 class="font-semibold text-slate-900 text-base leading-snug"><%= event.title %></h2>
+        <span class="ml-2 shrink-0 rounded-full px-2 py-0.5 text-xs font-medium
+          <%= event.activo? ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500' %>">
+          <%= event.activo? ? "Activo" : "Finalizado" %>
+        </span>
+      </div>
+      <p class="text-sm text-slate-500 line-clamp-2 mb-3"><%= event.description %></p>
+      <div class="text-xs text-slate-400 space-y-1">
+        <div>📅 <%= event.date&.strftime("%d/%m/%Y %H:%M") %></div>
+        <div>📍 <%= event.location %></div>
+      </div>
+      <div class="mt-4 pt-3 border-t border-slate-100">
+        <%= link_to "Ver evento →", event,
+              class: "text-sm font-medium text-wine-800 hover:text-wine-600 transition-colors" %>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+<% if @events.empty? %>
+  <div class="rounded-xl border border-dashed border-slate-300 bg-white p-12 text-center">
+    <p class="text-slate-400 text-sm">No hay eventos registrados aún.</p>
+  </div>
+<% end %>

@@ -3,9 +3,27 @@ Rails.application.routes.draw do
   root "home#index"
   get "home/index"
   resources :organizations
-  resources :events
-  resources :enrollments
-  resources :messages
+
+  resources :notifications, only: [ :index ] do
+    member do
+      patch :mark_as_read
+    end
+    collection do
+      patch :mark_all_as_read
+    end
+  end
+
+  resources :events do
+    member do
+      patch :finalizar
+    end
+    resources :enrollments, only: [ :create, :destroy ] do
+      member do
+        patch :check_in
+      end
+    end
+    resources :messages, only: [ :create ]
+  end
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
