@@ -2,7 +2,7 @@ class OrganizationsController < ApplicationController
   before_action :set_organization, only: %i[ show edit update destroy ]
 
   def index
-    @organizations = Organization.all
+    @organizations = policy_scope(Organization)
     authorize Organization
   end
 
@@ -53,6 +53,6 @@ class OrganizationsController < ApplicationController
   end
 
   def organization_params
-    params.expect(organization: [ :name, :description, :location ])
+    params.expect(organization: [ :name, :ruc, :description, :location ])
   end
 end

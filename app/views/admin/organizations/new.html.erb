@@ -1,0 +1,10 @@
+<div class="max-w-2xl mx-auto">
+  <div class="mb-6">
+    <h1 class="text-xl font-bold text-slate-900">Nueva organización</h1>
+    <p class="text-sm text-slate-500 mt-1">Registrar una organización y su representante</p>
+  </div>
+
+  <%= form_with model: [:admin, @organization], local: true do |f| %>
+    <%= render "form", organization: @organization, rep: @rep, f: f %>
+  <% end %>
+</div>

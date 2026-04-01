@@ -11,8 +11,15 @@
   <% end %>
 
   <div>
-    <%= form.label :name, "Nombre", class: "block text-sm font-medium text-slate-700 mb-1" %>
+    <%= form.label :name, "Nombre de la organización", class: "block text-sm font-medium text-slate-700 mb-1" %>
     <%= form.text_field :name, class: "w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-wine-300 focus:border-wine-400 transition" %>
+  </div>
+
+  <div>
+    <%= form.label :ruc, "RUC", class: "block text-sm font-medium text-slate-700 mb-1" %>
+    <%= form.text_field :ruc, maxlength: 13, placeholder: "1725958449001",
+          class: "w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-wine-300 focus:border-wine-400 transition" %>
+    <p class="text-xs text-slate-400 mt-1">13 dígitos — validación SRI Ecuador</p>
   </div>
 
   <div>

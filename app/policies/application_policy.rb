@@ -13,4 +13,17 @@ class ApplicationPolicy
   def update?  = false
   def edit?    = update?
   def destroy? = false
+
+  class Scope
+    def initialize(user, scope)
+      @user  = user
+      @scope = scope
+    end
+
+    def resolve = scope.all
+
+    private
+
+    attr_reader :user, :scope
+  end
 end

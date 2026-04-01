@@ -28,6 +28,10 @@
             <% if user_signed_in? %>
               <%= turbo_stream_from "notifications_#{current_user.id}" %>
 
+              <% if current_user.admin? %>
+                <%= link_to "Admin", admin_dashboard_index_path,
+                      class: "rounded bg-wine-600 px-3 py-1 text-xs font-bold text-white hover:bg-wine-500 transition-colors" %>
+              <% end %>
               <%= link_to "Eventos", events_path,
                     class: "text-slate-200 hover:text-white transition-colors" %>
               <%= link_to "Organizaciones", organizations_path,

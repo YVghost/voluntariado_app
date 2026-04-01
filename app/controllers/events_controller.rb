@@ -2,7 +2,7 @@ class EventsController < ApplicationController
   before_action :set_event, only: %i[ show edit update destroy finalizar ]
 
   def index
-    @events = Event.all
+    @events = policy_scope(Event)
     authorize Event
   end
 
@@ -12,6 +12,10 @@ class EventsController < ApplicationController
 
   def new
     @event = Event.new
+    # Pre-asignar la organización del organizador actual
+    if current_user.organizador? && current_user.organization.present?
+      @event.organization = current_user.organization
+    end
     authorize @event
   end
 

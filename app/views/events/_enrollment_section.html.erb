@@ -1,5 +1,28 @@
 <div id="enrollment_section">
-  <% if enrollment.nil? %>
+  <%# Organizadores y admins no se inscriben %>
+  <% if current_user.organizador? || current_user.admin? %>
+    <p class="text-sm text-slate-400 italic">
+      Las organizaciones y administradores no pueden inscribirse a eventos.
+    </p>
+
+  <%# Evento finalizado: solo mostrar historial si el voluntario participó %>
+  <% elsif event.finalizado? %>
+    <% if enrollment&.asistio? %>
+      <div class="rounded-lg bg-wine-50 border border-wine-200 px-4 py-3 text-sm space-y-1">
+        <p class="font-semibold text-wine-800">✓ Participaste en este evento</p>
+        <p class="text-slate-500">Check-in: <%= enrollment.check_in_time.strftime("%H:%M") %></p>
+        <% if enrollment.latitude.present? %>
+          <p class="text-slate-500 text-xs">📍 <%= enrollment.latitude.round(5) %>, <%= enrollment.longitude.round(5) %></p>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="rounded-lg bg-slate-50 border border-slate-200 px-4 py-3 text-sm text-slate-500">
+        Este evento ya finalizó.
+      </div>
+    <% end %>
+
+  <%# Evento activo — flujo normal de inscripción %>
+  <% elsif enrollment.nil? %>
     <%= button_to "Inscribirme", event_enrollments_path(event), method: :post,
           class: "w-full rounded-lg bg-wine-800 px-4 py-2 text-sm font-semibold text-white hover:bg-wine-700 transition-colors cursor-pointer" %>
 
@@ -17,9 +40,7 @@
                   data: { controller: "check-in" } do |f| %>
       <%= f.hidden_field :latitude,  data: { "check-in-target": "latitude" } %>
       <%= f.hidden_field :longitude, data: { "check-in-target": "longitude" } %>
-
       <p data-check-in-target="status" class="text-xs text-slate-400 mb-2"></p>
-
       <%= f.button "Hacer check-in",
             type: "button",
             data: { "check-in-target": "button", action: "click->check-in#check" },

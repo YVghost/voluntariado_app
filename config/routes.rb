@@ -1,8 +1,22 @@
 Rails.application.routes.draw do
-  devise_for :users
+  devise_for :users, controllers: { registrations: "users/registrations" }
   root "home#index"
   get "home/index"
   resources :organizations
+
+  namespace :admin do
+    resources :dashboard, only: [ :index ] do
+      collection do
+        delete :destroy_user
+        delete :destroy_event
+        delete :destroy_organization
+        delete :destroy_enrollment
+        patch  :update_user_role
+      end
+    end
+    resources :users, only: %i[new create edit update]
+    resources :organizations, only: %i[new create edit update]
+  end
 
   resources :notifications, only: [ :index ] do
     member do
