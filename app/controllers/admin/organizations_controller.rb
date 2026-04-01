@@ -3,7 +3,7 @@ class Admin::OrganizationsController < Admin::BaseController
 
   def new
     @organization = Organization.new
-    @organization.build_user
+    @rep = @organization.build_user
   end
 
   def create
