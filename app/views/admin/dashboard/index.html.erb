@@ -24,7 +24,7 @@
 </div>
 
 <%# Tabs %>
-<div data-controller="tabs" data-tabs-default-value="usuarios">
+<div data-controller="tabs" data-tabs-default-value="<%= params[:tab] || 'usuarios' %>">
 
   <div class="flex gap-1 border-b border-slate-200 mb-6">
     <% [["usuarios","Usuarios"], ["organizaciones","Organizaciones"], ["eventos","Eventos"], ["inscripciones","Inscripciones"]].each do |tab, label| %>
@@ -200,6 +200,8 @@
   <div data-tabs-target="panel" data-tab="inscripciones" class="hidden">
     <div class="flex items-center justify-between mb-4">
       <h2 class="font-semibold text-slate-800">Inscripciones (<%= @enrollments.count %>)</h2>
+      <%= link_to "＋ Nueva inscripción", new_admin_enrollment_path,
+            class: "rounded-lg bg-wine-800 px-3 py-1.5 text-xs font-semibold text-white hover:bg-wine-700 transition-colors" %>
     </div>
     <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
       <table class="w-full text-sm">

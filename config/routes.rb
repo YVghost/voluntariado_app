@@ -16,6 +16,12 @@ Rails.application.routes.draw do
     end
     resources :users, only: %i[new create edit update]
     resources :organizations, only: %i[new create edit update]
+    resources :enrollments, only: %i[new create]
+    resources :events, only: [] do
+      member do
+        get :available_volunteers
+      end
+    end
   end
 
   resources :notifications, only: [ :index ] do

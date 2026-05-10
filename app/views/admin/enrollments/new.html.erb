@@ -1,0 +1,92 @@
+<div class="mb-6 flex items-center gap-3">
+  <%= link_to "← Volver", admin_dashboard_index_path(tab: "inscripciones"),
+        class: "text-sm text-slate-500 hover:text-slate-700 transition-colors" %>
+  <h1 class="text-2xl font-bold text-slate-900">Nueva inscripción</h1>
+</div>
+
+<div class="max-w-lg">
+  <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+
+    <% if @enrollment.errors.any? %>
+      <div class="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <p class="font-semibold mb-1">Por favor corregí los siguientes errores:</p>
+        <ul class="list-disc list-inside space-y-0.5">
+          <% @enrollment.errors.full_messages.each do |msg| %>
+            <li><%= msg %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <%# data-controller activa el Stimulus que maneja la cascada %>
+    <%= form_with model: [:admin, @enrollment],
+                  data: { controller: "enrollment-select" },
+                  class: "space-y-5" do |f| %>
+
+      <%# 1 — Evento (primer dropdown: dispara la carga de voluntarios) %>
+      <div>
+        <%= f.label :event_id, "Evento", class: "block text-sm font-medium text-slate-700 mb-1" %>
+        <%= f.collection_select :event_id,
+              @events,
+              :id,
+              ->(e) { "#{e.title}  —  #{e.organization.name}" },
+              { prompt: "Seleccioná un evento" },
+              class: "w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm
+                      text-slate-800 focus:outline-none focus:ring-2 focus:ring-wine-300
+                      focus:border-wine-400 transition",
+              data: {
+                "enrollment-select-target" => "eventSelect",
+                action: "change->enrollment-select#loadVolunteers"
+              } %>
+        <p class="mt-1 text-xs text-slate-400">
+          Al seleccionar un evento, el siguiente dropdown carga solo los voluntarios que aún no están inscritos.
+        </p>
+      </div>
+
+      <%# 2 — Voluntario (segundo dropdown: se puebla vía AJAX según el evento) %>
+      <div>
+        <%= f.label :user_id, "Voluntario disponible", class: "block text-sm font-medium text-slate-700 mb-1" %>
+        <%= f.select :user_id,
+              [],
+              { prompt: "— primero seleccioná un evento —" },
+              class: "w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm
+                      text-slate-800 focus:outline-none focus:ring-2 focus:ring-wine-300
+                      focus:border-wine-400 transition",
+              data: { "enrollment-select-target" => "volunteerSelect" } %>
+      </div>
+
+      <%# 3 — Estado (enum con select, no input numérico) %>
+      <div>
+        <%= f.label :status, "Estado inicial", class: "block text-sm font-medium text-slate-700 mb-1" %>
+        <%= f.select :status,
+              Enrollment.statuses.keys.map { |s| [s.capitalize, s] },
+              { selected: "inscrito" },
+              class: "w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm
+                      text-slate-800 focus:outline-none focus:ring-2 focus:ring-wine-300
+                      focus:border-wine-400 transition" %>
+      </div>
+
+      <div class="flex items-center justify-end gap-3 pt-2">
+        <%= link_to "Cancelar", admin_dashboard_index_path(tab: "inscripciones"),
+              class: "rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-600
+                      hover:bg-slate-50 transition-colors" %>
+        <%= f.submit "Crear inscripción",
+              class: "rounded-lg bg-wine-800 px-4 py-2 text-sm font-semibold text-white
+                      hover:bg-wine-700 transition-colors cursor-pointer" %>
+      </div>
+
+    <% end %>
+  </div>
+
+  <%# Nota educativa visible en el video %>
+  <div class="mt-5 rounded-lg border border-slate-100 bg-slate-50 px-4 py-3 text-xs text-slate-500 space-y-1">
+    <p><strong>¿Por qué el dropdown de voluntarios está vacío al inicio?</strong></p>
+    <p>
+      El campo <code>user_id</code> es una clave foránea a la tabla <code>users</code>.
+      En lugar de ingresar el ID numérico manualmente, el sistema usa un dropdown que se carga
+      dinámicamente vía AJAX (<code>GET /admin/events/:id/available_volunteers</code>) según el
+      evento seleccionado, mostrando únicamente los voluntarios que aún no tienen inscripción
+      activa en ese evento.
+    </p>
+  </div>
+</div>

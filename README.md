@@ -49,12 +49,14 @@ El flujo principal es:
 ## Instalación
 
 ```bash
-git clone <repo>
+git clone https://github.com/mateo-herrera/voluntariado_app.git
 cd voluntariado_app
 
 bundle install
 
-bin/rails db:create db:migrate
+cp .env.example .env   # ajustar DATABASE_URL si es necesario
+
+bin/rails db:create db:migrate db:seed
 
 bin/rails server
 ```
@@ -64,6 +66,35 @@ En otra terminal, compilar Tailwind en modo watch:
 ```bash
 bin/rails tailwindcss:watch
 ```
+
+---
+
+## Datos de prueba (seeds)
+
+El comando `db:seed` crea un conjunto de datos de demostración listo para el video:
+
+| Rol | Email | Contraseña |
+|---|---|---|
+| **Admin** | `admin@voluntariado.ec` | `password123` |
+| Organizador (Cruz Roja) | `karla@cruzroja.ec` | `password123` |
+| Organizador (Hogar de Cristo) | `diego@hogar.ec` | `password123` |
+| Voluntario | `ana@mail.ec` | `password123` |
+| Voluntario | `luis@mail.ec` | `password123` |
+
+Incluye 3 organizaciones, 4 eventos (3 activos + 1 finalizado) y 7 inscripciones de ejemplo.
+
+---
+
+## Deploy
+
+La aplicación está desplegada en **Render** (o Railway):
+
+> **URL de producción:** _(agregar URL cuando esté desplegado)_
+
+Para el deploy se recomienda usar las variables de entorno:
+- `DATABASE_URL` — cadena de conexión PostgreSQL
+- `SECRET_KEY_BASE` — generada con `bin/rails secret`
+- `RAILS_ENV=production`
 
 ---
 

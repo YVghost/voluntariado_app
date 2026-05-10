@@ -1,9 +1,8 @@
-<%= form_with(model: enrollment) do |form| %>
+<%= form_with(model: enrollment, class: "space-y-5") do |form| %>
   <% if enrollment.errors.any? %>
-    <div style="color: red">
-      <h2><%= pluralize(enrollment.errors.count, "error") %> prohibited this enrollment from being saved:</h2>
-
-      <ul>
+    <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+      <p class="font-semibold mb-1"><%= pluralize(enrollment.errors.count, "error") %> al guardar:</p>
+      <ul class="list-disc list-inside space-y-0.5">
         <% enrollment.errors.each do |error| %>
           <li><%= error.full_message %></li>
         <% end %>
@@ -12,36 +11,41 @@
   <% end %>
 
   <div>
-    <%= form.label :user_id, style: "display: block" %>
-    <%= form.text_field :user_id %>
+    <%= form.label :event_id, "Evento", class: "block text-sm font-medium text-slate-700 mb-1" %>
+    <%= form.collection_select :event_id,
+          Event.includes(:organization).order(:title),
+          :id,
+          ->(e) { "#{e.title} — #{e.organization.name}" },
+          { prompt: "Seleccioná un evento" },
+          class: "w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm
+                  text-slate-800 focus:outline-none focus:ring-2 focus:ring-wine-300
+                  focus:border-wine-400 transition" %>
   </div>
 
   <div>
-    <%= form.label :event_id, style: "display: block" %>
-    <%= form.text_field :event_id %>
+    <%= form.label :user_id, "Voluntario", class: "block text-sm font-medium text-slate-700 mb-1" %>
+    <%= form.collection_select :user_id,
+          User.where(role: :voluntario).order(:name),
+          :id,
+          :name,
+          { prompt: "Seleccioná un voluntario" },
+          class: "w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm
+                  text-slate-800 focus:outline-none focus:ring-2 focus:ring-wine-300
+                  focus:border-wine-400 transition" %>
   </div>
 
   <div>
-    <%= form.label :status, style: "display: block" %>
-    <%= form.number_field :status %>
+    <%= form.label :status, "Estado", class: "block text-sm font-medium text-slate-700 mb-1" %>
+    <%= form.select :status,
+          Enrollment.statuses.keys.map { |s| [s.capitalize, s] },
+          { selected: enrollment.status || "inscrito" },
+          class: "w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm
+                  text-slate-800 focus:outline-none focus:ring-2 focus:ring-wine-300
+                  focus:border-wine-400 transition" %>
   </div>
 
   <div>
-    <%= form.label :check_in_time, style: "display: block" %>
-    <%= form.datetime_field :check_in_time %>
-  </div>
-
-  <div>
-    <%= form.label :latitude, style: "display: block" %>
-    <%= form.text_field :latitude %>
-  </div>
-
-  <div>
-    <%= form.label :longitude, style: "display: block" %>
-    <%= form.text_field :longitude %>
-  </div>
-
-  <div>
-    <%= form.submit %>
+    <%= form.submit class: "rounded-lg bg-wine-800 px-5 py-2 text-sm font-semibold text-white
+                            hover:bg-wine-700 transition-colors cursor-pointer" %>
   </div>
 <% end %>

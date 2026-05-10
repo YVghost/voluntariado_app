@@ -1,2 +1,51 @@
-<h1>Home#index</h1>
-<p>Find me in app/views/home/index.html.erb</p>
+<%# Hero %>
+<div class="py-20 text-center">
+  <h1 class="text-5xl font-extrabold text-slate-900 tracking-tight mb-4">
+    Coordinación de <span class="text-wine-800">Voluntariado</span>
+  </h1>
+  <p class="text-lg text-slate-500 max-w-2xl mx-auto mb-10">
+    Conectamos voluntarios con organizaciones que necesitan ayuda en emergencias y eventos sociales.
+    Inscribite, hacé check-in desde tu ubicación y participá en tiempo real.
+  </p>
+  <div class="flex items-center justify-center gap-4 flex-wrap">
+    <%= link_to "Ver eventos disponibles", new_user_session_path,
+          class: "rounded-lg bg-wine-800 px-6 py-3 text-sm font-semibold text-white hover:bg-wine-700 transition-colors shadow-sm" %>
+    <%= link_to "Registrarse como voluntario", new_user_registration_path,
+          class: "rounded-lg border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-sm" %>
+  </div>
+</div>
+
+<%# Stats %>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-16">
+  <div class="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm text-center">
+    <p class="text-4xl font-extrabold text-wine-800 mb-1"><%= @eventos_count %></p>
+    <p class="text-sm font-medium text-slate-500 uppercase tracking-wide">Eventos publicados</p>
+  </div>
+  <div class="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm text-center">
+    <p class="text-4xl font-extrabold text-wine-800 mb-1"><%= @organizaciones_count %></p>
+    <p class="text-sm font-medium text-slate-500 uppercase tracking-wide">Organizaciones</p>
+  </div>
+  <div class="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm text-center">
+    <p class="text-4xl font-extrabold text-wine-800 mb-1"><%= @voluntarios_count %></p>
+    <p class="text-sm font-medium text-slate-500 uppercase tracking-wide">Voluntarios registrados</p>
+  </div>
+</div>
+
+<%# Features %>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-16">
+  <div class="rounded-xl border border-slate-100 bg-white p-6 shadow-sm">
+    <div class="text-2xl mb-3">📍</div>
+    <h3 class="font-semibold text-slate-800 mb-1">Check-in geolocalizado</h3>
+    <p class="text-sm text-slate-500">Registrá tu asistencia con un toque desde tu ubicación GPS real.</p>
+  </div>
+  <div class="rounded-xl border border-slate-100 bg-white p-6 shadow-sm">
+    <div class="text-2xl mb-3">💬</div>
+    <h3 class="font-semibold text-slate-800 mb-1">Chat en tiempo real</h3>
+    <p class="text-sm text-slate-500">Cada evento tiene un canal de chat en vivo para coordinarse al instante.</p>
+  </div>
+  <div class="rounded-xl border border-slate-100 bg-white p-6 shadow-sm">
+    <div class="text-2xl mb-3">🔔</div>
+    <h3 class="font-semibold text-slate-800 mb-1">Notificaciones al instante</h3>
+    <p class="text-sm text-slate-500">Recibí alertas cuando un evento finaliza o confirmás tu inscripción.</p>
+  </div>
+</div>
