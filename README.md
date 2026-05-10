@@ -1,6 +1,6 @@
 # Plataforma de Coordinación de Voluntariado
 
-Sistema web para la gestión y coordinación de eventos de voluntariado en tiempo real. Permite a organizaciones publicar eventos, a voluntarios inscribirse y hacer check-in con geolocalización, y a todos los participantes comunicarse mediante un chat en vivo por evento.
+Sistema web para la gestion y cordinacion de emergencias a tiempo real. Permite a organizaciones y entidades publicar emergencias que se requiera voluntarios y gente especializada para brindar ayuda y asistencia de forma inmediata permitiendo a los voluntarios recibir notificacion por geolalizacion, hacer aceptacion y chat en vivo para facilitar comunicacion.
 
 ---
 
