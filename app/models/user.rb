@@ -11,7 +11,13 @@ class User < ApplicationRecord
   has_many :events, through: :enrollments
   has_many :messages, dependent: :destroy
   has_many :notifications, dependent: :destroy
+  has_many :reviews_given, class_name: "EnrollmentReview", foreign_key: :reviewer_id, dependent: :destroy
   has_one :organization, dependent: :nullify
+  has_one :volunteer_profile, dependent: :destroy
+
+  def profile_complete?
+    volunteer_profile&.quiz_completed_at.present?
+  end
 
   # Voluntarios requieren cédula, nombres y apellidos
   with_options if: :voluntario? do

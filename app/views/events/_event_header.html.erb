@@ -1,25 +1,73 @@
-<div id="event_header" class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm mb-6">
-  <div class="flex items-start justify-between gap-4">
+<%# Banner de emergencia alta (T3+) %>
+<% if event.emergency_level.present? && event.emergency_level >= 3 %>
+  <%
+    banner_bg = case event.emergency_level
+    when 3 then "bg-yellow-600"
+    when 4 then "bg-orange-600"
+    when 5 then "bg-red-700"
+    when 6 then "bg-rose-900"
+    end
+  %>
+  <div class="rounded-t-2xl <%= banner_bg %> px-6 py-3 flex items-center gap-3">
+    <div class="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center">
+      <svg width="16" height="16" class="h-4 w-4 text-white" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+    </div>
     <div>
-      <h1 class="text-2xl font-bold text-slate-900 mb-1"><%= event.title %></h1>
+      <p class="text-white font-bold text-sm">EMERGENCIA T<%= event.emergency_level %> — <%= ["","Leve","Moderada","Media","Alta","Crítica","Catástrofe"][event.emergency_level].upcase %></p>
+      <% if event.emergency_type.present? %>
+        <p class="text-white/80 text-xs capitalize"><%= event.emergency_type %></p>
+      <% end %>
+    </div>
+    <div class="ml-auto">
+      <span class="rounded-full bg-white/20 px-3 py-1 text-xs font-bold text-white <%= event.finalizado? ? '' : event.en_curso? ? 'animate-pulse' : '' %>">
+        <%= event.finalizado? ? "Finalizado" : event.en_curso? ? "● En curso" : "● Convocando" %>
+      </span>
+    </div>
+  </div>
+<% end %>
+
+<div id="event_header" class="<%= event.emergency_level.present? && event.emergency_level >= 3 ? 'rounded-b-2xl rounded-t-none' : 'rounded-2xl' %> border border-slate-200 bg-white p-6 shadow-sm mb-6">
+  <div class="flex items-start justify-between gap-4 mb-4">
+    <div class="flex-1">
+      <div class="flex items-center gap-3 flex-wrap mb-1">
+        <h1 class="text-2xl font-bold text-slate-900"><%= event.title %></h1>
+        <% if !event.emergency_level.present? || event.emergency_level < 3 %>
+          <span class="rounded-full px-3 py-1 text-xs font-semibold
+            <%= event.finalizado? ? 'bg-slate-100 text-slate-600' :
+                event.en_curso?   ? 'bg-amber-100 text-amber-800' :
+                                    'bg-green-100 text-green-800' %>">
+            <%= event.finalizado? ? "Finalizado" : event.en_curso? ? "En curso" : "Convocando" %>
+          </span>
+          <% if event.emergency_level.present? %>
+            <span class="rounded-full px-3 py-1 text-xs font-bold
+              <%= event.emergency_level >= 5 ? 'bg-red-100 text-red-800' :
+                  event.emergency_level >= 3 ? 'bg-orange-100 text-orange-800' :
+                                               'bg-yellow-100 text-yellow-800' %>">
+              T<%= event.emergency_level %> — <%= ["","Leve","Moderada","Media","Alta","Crítica","Catástrofe"][event.emergency_level] %>
+            </span>
+          <% end %>
+        <% end %>
+      </div>
       <p class="text-sm text-slate-500"><%= event.organization.name %></p>
     </div>
-    <span class="shrink-0 rounded-full px-3 py-1 text-sm font-semibold
-      <%= event.finalizado? ? 'bg-slate-100 text-slate-500' : 'bg-green-100 text-green-700' %>">
-      <%= event.finalizado? ? "Finalizado" : "Activo" %>
-    </span>
   </div>
 
-  <p class="mt-4 text-slate-700 leading-relaxed"><%= event.description %></p>
+  <p class="text-slate-700 leading-relaxed mb-5"><%= event.description %></p>
 
-  <div class="mt-4 grid grid-cols-2 gap-3 text-sm text-slate-600">
-    <div class="flex items-center gap-2">
-      <span class="text-slate-400">📅</span>
-      <%= event.date&.strftime("%d de %B, %Y — %H:%M hs") %>
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+    <div class="flex items-center gap-3 rounded-lg bg-slate-50 px-4 py-3">
+      <span class="text-base shrink-0">📅</span>
+      <div>
+        <p class="text-xs text-slate-400">Fecha y hora</p>
+        <p class="text-sm font-medium text-slate-800"><%= event.date&.strftime("%d de %B, %Y — %H:%M hs") || "Por definir" %></p>
+      </div>
     </div>
-    <div class="flex items-center gap-2">
-      <span class="text-slate-400">📍</span>
-      <%= event.location %>
+    <div class="flex items-center gap-3 rounded-lg bg-slate-50 px-4 py-3">
+      <span class="text-base shrink-0">📍</span>
+      <div>
+        <p class="text-xs text-slate-400">Ubicación</p>
+        <p class="text-sm font-medium text-slate-800"><%= event.location || "Por definir" %></p>
+      </div>
     </div>
   </div>
 </div>

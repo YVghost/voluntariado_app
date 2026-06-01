@@ -1,7 +1,10 @@
-<div class="max-w-lg">
-  <h1 class="text-2xl font-bold text-slate-900 mb-6">Editar evento</h1>
-  <%= render "form", event: @event %>
-  <div class="mt-4">
-    <%= link_to "← Volver al evento", @event, class: "text-sm text-slate-500 hover:text-slate-700 transition-colors" %>
+<div class="max-w-5xl mx-auto">
+  <div class="mb-6 flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-900">Editar evento</h1>
+      <p class="text-sm text-slate-500 mt-1"><%= @event.title %></p>
+    </div>
+    <%= link_to "← Volver al evento", @event, class: "text-sm text-slate-500 hover:text-slate-700 transition-colors shrink-0" %>
   </div>
+  <%= render "form", event: @event %>
 </div>

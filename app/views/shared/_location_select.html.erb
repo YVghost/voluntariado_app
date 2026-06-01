@@ -1,0 +1,60 @@
+<%#
+  Partial de selects en cascada para ubicación.
+  Variables locales:
+    location_value  — string actual "País, Ciudad, Sector" (puede ser nil)
+    input_name      — name del hidden input que se envía al server, ej: "event[location]"
+    field_id        — id base para los selects (evitar colisión si hay múltiples en la misma página)
+    required        — (opcional) boolean, agrega required al hidden input
+%>
+<% loc_parts  = (location_value.to_s).split(",").map(&:strip) %>
+<% loc_country = loc_parts[0].presence %>
+<% loc_city    = loc_parts[1].presence %>
+<% loc_sector  = loc_parts[2].presence %>
+<% fid = field_id.presence || "loc" %>
+
+<div data-controller="address-select">
+  <%# Hidden input que recibe el valor ensamblado "País, Ciudad, Sector" %>
+  <input type="hidden"
+         name="<%= input_name %>"
+         id="<%= fid %>_location_input"
+         value="<%= location_value %>"
+         data-address-select-target="locationInput"
+         <%= defined?(required) && required ? "required" : "" %>>
+
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <div>
+      <label class="block text-xs font-medium text-slate-600 mb-1">País</label>
+      <select id="<%= fid %>_country"
+              data-address-select-target="country"
+              data-action="change->address-select#loadCities"
+              class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-wine-300 transition">
+        <option value="">Seleccioná un país</option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-slate-600 mb-1">Ciudad</label>
+      <select id="<%= fid %>_city"
+              data-address-select-target="city"
+              data-action="change->address-select#loadSectors"
+              class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-wine-300 transition">
+        <option value="">— primero seleccioná un país —</option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-slate-600 mb-1">Sector / Barrio</label>
+      <select id="<%= fid %>_sector"
+              data-address-select-target="sector"
+              data-action="change->address-select#syncOnSectorChange"
+              class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-wine-300 transition">
+        <option value="">— primero seleccioná una ciudad —</option>
+      </select>
+    </div>
+  </div>
+
+  <%# Valores actuales para preselección al cargar %>
+  <div data-address-select-target="currentValues"
+       data-country="<%= loc_country %>"
+       data-city="<%= loc_city %>"
+       data-sector="<%= loc_sector %>"
+       class="hidden"></div>
+</div>

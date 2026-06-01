@@ -1,51 +1,113 @@
-<%# Hero %>
-<div class="py-20 text-center">
-  <h1 class="text-5xl font-extrabold text-slate-900 tracking-tight mb-4">
-    Coordinación de <span class="text-wine-800">Voluntariado</span>
-  </h1>
-  <p class="text-lg text-slate-500 max-w-2xl mx-auto mb-10">
-    Conectamos voluntarios con organizaciones que necesitan ayuda en emergencias y eventos sociales.
-    Inscribite, hacé check-in desde tu ubicación y participá en tiempo real.
-  </p>
-  <div class="flex items-center justify-center gap-4 flex-wrap">
-    <%= link_to "Ver eventos disponibles", new_user_session_path,
-          class: "rounded-lg bg-wine-800 px-6 py-3 text-sm font-semibold text-white hover:bg-wine-700 transition-colors shadow-sm" %>
-    <%= link_to "Registrarse como voluntario", new_user_registration_path,
-          class: "rounded-lg border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-sm" %>
+<%# ── Hero: split layout ──────────────────────────────────────────────── %>
+<div class="rounded-2xl bg-white border border-slate-200 shadow-sm overflow-hidden mb-8">
+  <div class="grid grid-cols-1 lg:grid-cols-2">
+
+    <%# Lado izquierdo: texto y CTAs %>
+    <div class="px-8 py-12 lg:py-16 flex flex-col justify-center">
+      <span class="inline-flex items-center gap-1.5 rounded-full border border-wine-200 bg-wine-50 px-3 py-1 text-xs font-semibold text-wine-700 mb-5 self-start">
+        <span class="h-1.5 w-1.5 rounded-full bg-wine-600"></span>
+        Sistema activo
+      </span>
+      <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 leading-tight mb-4">
+        Voluntarios listos<br>para la emergencia<br>
+        <span class="text-wine-700">correcta.</span>
+      </h1>
+      <p class="text-slate-500 text-base leading-relaxed mb-8 max-w-sm">
+        Tu perfil de habilidades determina a qué emergencias podés responder.
+        El sistema te convoca automáticamente cuando más se necesita.
+      </p>
+      <div class="flex gap-3 flex-wrap">
+        <%= link_to "Registrarme como voluntario", new_user_registration_path,
+              class: "rounded-lg bg-wine-800 px-5 py-2.5 text-sm font-semibold text-white hover:bg-wine-700 transition-colors shadow-sm" %>
+        <%= link_to "Iniciar sesión", new_user_session_path,
+              class: "rounded-lg border border-slate-200 bg-slate-50 px-5 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-100 transition-colors" %>
+      </div>
+    </div>
+
+    <%# Lado derecho: escala de emergencias %>
+    <div class="border-t border-slate-200 lg:border-t-0 lg:border-l px-8 py-10 bg-slate-50 flex flex-col justify-center">
+      <p class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-4">Escala de emergencias</p>
+      <div class="space-y-2">
+        <% [
+          ["T1", "Emergencia leve",      "Caídas, desmayos, accidentes menores",          "bg-green-100  text-green-800  border-green-200"],
+          ["T2", "Emergencia moderada",  "Accidentes viales, incendios pequeños",          "bg-lime-100   text-lime-800   border-lime-200"],
+          ["T3", "Emergencia media",     "Inundaciones leves, eventos masivos",            "bg-yellow-100 text-yellow-800 border-yellow-200"],
+          ["T4", "Emergencia alta",      "Sismos moderados, rescates múltiples",           "bg-orange-100 text-orange-800 border-orange-200"],
+          ["T5", "Emergencia crítica",   "Deslaves, colapsos estructurales",               "bg-red-100    text-red-800    border-red-200"],
+          ["T6", "Catástrofe",           "Terremotos, tsunamis, erupciones",               "bg-rose-100   text-rose-900   border-rose-300"],
+        ].each do |tag, label, desc, css| %>
+          <div class="flex items-center gap-3 rounded-lg border <%= css %> px-3 py-2">
+            <span class="shrink-0 w-8 text-center font-extrabold text-sm"><%= tag %></span>
+            <div class="min-w-0">
+              <p class="text-xs font-semibold leading-none"><%= label %></p>
+              <p class="text-xs opacity-70 mt-0.5 truncate"><%= desc %></p>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
   </div>
 </div>
 
-<%# Stats %>
-<div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-16">
-  <div class="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm text-center">
-    <p class="text-4xl font-extrabold text-wine-800 mb-1"><%= @eventos_count %></p>
-    <p class="text-sm font-medium text-slate-500 uppercase tracking-wide">Eventos publicados</p>
-  </div>
-  <div class="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm text-center">
-    <p class="text-4xl font-extrabold text-wine-800 mb-1"><%= @organizaciones_count %></p>
-    <p class="text-sm font-medium text-slate-500 uppercase tracking-wide">Organizaciones</p>
-  </div>
-  <div class="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm text-center">
-    <p class="text-4xl font-extrabold text-wine-800 mb-1"><%= @voluntarios_count %></p>
-    <p class="text-sm font-medium text-slate-500 uppercase tracking-wide">Voluntarios registrados</p>
+<%# ── Stats ───────────────────────────────────────────────────────────── %>
+<div class="rounded-xl bg-white border border-slate-200 shadow-sm mb-8">
+  <div class="grid grid-cols-3 divide-x divide-slate-200">
+    <div class="px-6 py-5 text-center">
+      <p class="text-3xl font-extrabold text-wine-700"><%= @eventos_count %></p>
+      <p class="text-xs text-slate-500 mt-1">Eventos activos</p>
+    </div>
+    <div class="px-6 py-5 text-center">
+      <p class="text-3xl font-extrabold text-wine-700"><%= @organizaciones_count %></p>
+      <p class="text-xs text-slate-500 mt-1">Organizaciones</p>
+    </div>
+    <div class="px-6 py-5 text-center">
+      <p class="text-3xl font-extrabold text-wine-700"><%= @voluntarios_count %></p>
+      <p class="text-xs text-slate-500 mt-1">Voluntarios</p>
+    </div>
   </div>
 </div>
 
-<%# Features %>
-<div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-16">
-  <div class="rounded-xl border border-slate-100 bg-white p-6 shadow-sm">
-    <div class="text-2xl mb-3">📍</div>
-    <h3 class="font-semibold text-slate-800 mb-1">Check-in geolocalizado</h3>
-    <p class="text-sm text-slate-500">Registrá tu asistencia con un toque desde tu ubicación GPS real.</p>
+<%# ── Cómo funciona ───────────────────────────────────────────────────── %>
+<div class="rounded-xl bg-white border border-slate-200 shadow-sm p-6 mb-8">
+  <h2 class="text-sm font-bold text-slate-900 uppercase tracking-wide mb-6">¿Cómo funciona?</h2>
+  <div class="grid grid-cols-1 sm:grid-cols-4 gap-0">
+    <% [
+      ["Completá tu perfil",      "Respondé el cuestionario de habilidades una sola vez.",             "01"],
+      ["La org publica",          "Una organización registra una emergencia con nivel T1–T6.",          "02"],
+      ["El sistema te convoca",   "Si tu perfil coincide, recibís una notificación al instante.",      "03"],
+      ["Coordinás en tiempo real","Confirmás tu asistencia y chatéas con la org desde la plataforma.", "04"],
+    ].each_with_index do |(title, desc, num), i| %>
+      <div class="relative flex gap-4 sm:flex-col sm:gap-0 pb-6 sm:pb-0 sm:pr-4 <%= i < 3 ? 'sm:border-r border-slate-100' : '' %>">
+        <%# Línea conectora horizontal (solo en sm+) %>
+        <% if i < 3 %>
+          <div class="hidden sm:block absolute top-4 left-1/2 w-full h-px bg-slate-100" style="left: 50%; width: calc(100% - 20px)"></div>
+        <% end %>
+        <div class="shrink-0 sm:mb-4 relative z-10">
+          <div class="h-8 w-8 rounded-full bg-wine-50 border-2 border-wine-200 flex items-center justify-center">
+            <span class="text-xs font-bold text-wine-700"><%= num %></span>
+          </div>
+        </div>
+        <div class="sm:pt-0 sm:px-2">
+          <p class="text-sm font-semibold text-slate-800 mb-1"><%= title %></p>
+          <p class="text-xs text-slate-500 leading-relaxed"><%= desc %></p>
+        </div>
+      </div>
+    <% end %>
   </div>
-  <div class="rounded-xl border border-slate-100 bg-white p-6 shadow-sm">
-    <div class="text-2xl mb-3">💬</div>
-    <h3 class="font-semibold text-slate-800 mb-1">Chat en tiempo real</h3>
-    <p class="text-sm text-slate-500">Cada evento tiene un canal de chat en vivo para coordinarse al instante.</p>
-  </div>
-  <div class="rounded-xl border border-slate-100 bg-white p-6 shadow-sm">
-    <div class="text-2xl mb-3">🔔</div>
-    <h3 class="font-semibold text-slate-800 mb-1">Notificaciones al instante</h3>
-    <p class="text-sm text-slate-500">Recibí alertas cuando un evento finaliza o confirmás tu inscripción.</p>
-  </div>
+</div>
+
+<%# ── Features ────────────────────────────────────────────────────────── %>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+  <% [
+    ["🎯", "Matching inteligente",     "bg-amber-50  border-amber-100",  "Tu score y habilidades determinan qué emergencias son adecuadas para vos. Sin asignaciones al azar."],
+    ["💬", "Chat por evento",          "bg-blue-50   border-blue-100",   "Canal de comunicación en vivo entre los voluntarios convocados y la organización coordinadora."],
+    ["🔔", "Alertas en tiempo real",   "bg-green-50  border-green-100",  "Notificaciones instantáneas cuando sos convocado, confirmás asistencia o un evento cambia de estado."],
+  ].each do |icon, title, bg, desc| %>
+    <div class="rounded-xl border <%= bg %> p-5">
+      <div class="text-2xl mb-3"><%= icon %></div>
+      <h3 class="font-semibold text-slate-800 text-sm mb-1.5"><%= title %></h3>
+      <p class="text-xs text-slate-500 leading-relaxed"><%= desc %></p>
+    </div>
+  <% end %>
 </div>

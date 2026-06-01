@@ -17,10 +17,16 @@ Rails.application.routes.draw do
     resources :users, only: %i[new create edit update]
     resources :organizations, only: %i[new create edit update]
     resources :enrollments, only: %i[new create]
-    resources :events, only: [] do
+    resources :events, only: %i[new create] do
       member do
         get :available_volunteers
       end
+    end
+  end
+
+  resource :quiz, only: [:show, :update], controller: :quiz do
+    member do
+      patch :toggle_availability
     end
   end
 
@@ -33,13 +39,16 @@ Rails.application.routes.draw do
     end
   end
 
+  get "/perfil", to: "profiles#show", as: :perfil
+
   resources :events do
     member do
       patch :finalizar
     end
-    resources :enrollments, only: [ :create, :destroy ] do
+    resource :reviews, only: [:new, :create], controller: "event_reviews"
+    resources :enrollments, only: [ :create, :update, :destroy ] do
       member do
-        patch :check_in
+        patch :mark_attendance
       end
     end
     resources :messages, only: [ :create ]

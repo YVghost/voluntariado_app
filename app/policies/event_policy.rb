@@ -2,11 +2,11 @@ class EventPolicy < ApplicationPolicy
   # Voluntarios solo ven eventos activos; organizadores ven los suyos; admin ve todo
   def index? = true
 
-  # Voluntarios no pueden ver eventos finalizados
+  # Voluntarios pueden ver eventos vigentes (activo o en_curso); no los finalizados
   def show?
     user.admin? ||
       (user.organizador? && own_event?) ||
-      (user.voluntario? && record.activo?)
+      (user.voluntario? && (record.activo? || record.en_curso?))
   end
 
   # Solo admin y organizador pueden crear
@@ -24,8 +24,8 @@ class EventPolicy < ApplicationPolicy
         # Solo los eventos de su organización
         scope.joins(:organization).where(organizations: { user_id: user.id })
       else
-        # Voluntarios: solo eventos activos
-        scope.activos
+        # Voluntarios: eventos vigentes (activo + en_curso)
+        scope.vigentes
       end
     end
   end

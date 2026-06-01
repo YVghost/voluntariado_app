@@ -27,8 +27,11 @@
         </div>
       </div>
       <div>
-        <%= f.label :location, "Ubicación", class: "block text-xs font-medium text-slate-600 mb-1" %>
-        <%= f.text_field :location, class: "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-wine-300" %>
+        <p class="block text-xs font-medium text-slate-600 mb-2">Ubicación</p>
+        <%= render "shared/location_select",
+              location_value: organization.location,
+              input_name: "organization[location]",
+              field_id: "admin_org" %>
       </div>
       <div>
         <%= f.label :description, "Descripción", class: "block text-xs font-medium text-slate-600 mb-1" %>

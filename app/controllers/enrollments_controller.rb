@@ -2,7 +2,7 @@ class EnrollmentsController < ApplicationController
   before_action :set_event
 
   def create
-    @enrollment = @event.enrollments.new(user: current_user)
+    @enrollment = @event.enrollments.new(user: current_user, status: :confirmado)
     authorize @enrollment
 
     if @enrollment.save
@@ -12,6 +12,13 @@ class EnrollmentsController < ApplicationController
     end
   end
 
+  def update
+    @enrollment = @event.enrollments.find_by!(user: current_user)
+    authorize @enrollment
+    @enrollment.update!(status: params.dig(:enrollment, :status))
+    redirect_to @event, notice: "Inscripción actualizada."
+  end
+
   def destroy
     @enrollment = @event.enrollments.find_by!(user: current_user)
     authorize @enrollment
@@ -19,26 +26,19 @@ class EnrollmentsController < ApplicationController
     redirect_to @event, notice: "Inscripción cancelada."
   end
 
-  def check_in
-    @enrollment = @event.enrollments.find_by!(user: current_user)
-    authorize @enrollment, :update?
-
-    @enrollment.update!(
-      status: :asistio,
-      check_in_time: Time.current,
-      latitude: params[:latitude],
-      longitude: params[:longitude]
-    )
-
+  def mark_attendance
+    @enrollment = @event.enrollments.find(params[:id])
+    authorize @enrollment, :mark_attendance?
+    @enrollment.update!(status: :asistio, attended_at: Time.current)
     respond_to do |format|
       format.turbo_stream {
         render turbo_stream: turbo_stream.replace(
-          "enrollment_section",
-          partial: "events/enrollment_section",
-          locals: { event: @event, enrollment: @enrollment }
+          "enrollment_#{@enrollment.id}",
+          partial: "enrollments/enrollment",
+          locals: { enrollment: @enrollment, event: @event }
         )
       }
-      format.html { redirect_to @event, notice: "¡Check-in realizado!" }
+      format.html { redirect_to @event, notice: "Asistencia marcada." }
     end
   end
 

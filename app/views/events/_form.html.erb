@@ -1,50 +1,153 @@
-<%= form_with(model: event, class: "space-y-5") do |form| %>
+<%= form_with(model: event, class: "space-y-0") do |form| %>
   <% if event.errors.any? %>
-    <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+    <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 mb-6">
       <p class="font-semibold mb-1"><%= pluralize(event.errors.count, "error") %> al guardar:</p>
       <ul class="list-disc list-inside space-y-0.5">
-        <% event.errors.each do |error| %>
-          <li><%= error.full_message %></li>
-        <% end %>
+        <% event.errors.each do |error| %><li><%= error.full_message %></li><% end %>
       </ul>
     </div>
   <% end %>
 
-  <div>
-    <%= form.label :title, "Título", class: "block text-sm font-medium text-slate-700 mb-1" %>
-    <%= form.text_field :title, class: "w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-wine-300 focus:border-wine-400 transition" %>
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+    <%# Columna izquierda: Información general %>
+    <div class="space-y-5">
+      <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide mb-5">
+          Información del evento
+        </h3>
+        <div class="space-y-4">
+          <div>
+            <%= form.label :title, "Título *", class: "block text-xs font-semibold text-slate-600 mb-1.5" %>
+            <%= form.text_field :title, placeholder: "Nombre del evento",
+                  class: "w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-wine-300 focus:border-wine-400 transition" %>
+          </div>
+          <div>
+            <%= form.label :description, "Descripción *", class: "block text-xs font-semibold text-slate-600 mb-1.5" %>
+            <%= form.textarea :description, rows: 4, placeholder: "Detallá el objetivo, contexto y lo que se necesita...",
+                  class: "w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-wine-300 focus:border-wine-400 transition resize-none" %>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <%= form.label :date, "Fecha y hora *", class: "block text-xs font-semibold text-slate-600 mb-1.5" %>
+              <%= form.datetime_field :date,
+                    class: "w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-wine-300 focus:border-wine-400 transition" %>
+            </div>
+            <div>
+              <%= form.label :status, "Estado", class: "block text-xs font-semibold text-slate-600 mb-1.5" %>
+              <%= form.select :status, Event.statuses.keys.map { |s| [s.capitalize, s] },
+                    { selected: event.status || "activo" },
+                    class: "w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-wine-300 focus:border-wine-400 transition" %>
+            </div>
+          </div>
+          <div>
+            <p class="block text-xs font-semibold text-slate-600 mb-1.5">Organización</p>
+            <% if current_user.admin? %>
+              <%= form.collection_select :organization_id, Organization.all, :id, :name,
+                    { prompt: "Seleccioná una organización" },
+                    class: "w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-wine-300 focus:border-wine-400 transition" %>
+            <% else %>
+              <%# Organizador: org fijada, no editable %>
+              <div class="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5">
+                <div class="h-6 w-6 rounded-full bg-wine-100 flex items-center justify-center shrink-0">
+                  <span class="text-xs font-bold text-wine-700"><%= current_user.organization&.name&.first&.upcase %></span>
+                </div>
+                <span class="text-sm font-medium text-slate-800"><%= current_user.organization&.name %></span>
+              </div>
+              <%= form.hidden_field :organization_id, value: current_user.organization&.id %>
+            <% end %>
+          </div>
+        </div>
+      </div>
+
+      <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide mb-5">
+          Ubicación *
+        </h3>
+        <%= render "shared/location_select",
+              location_value: event.location,
+              input_name: "event[location]",
+              field_id: "event" %>
+      </div>
+    </div>
+
+    <%# Columna derecha: Categoría de emergencia %>
+    <div class="space-y-5">
+      <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm" data-controller="emergency-level">
+        <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide mb-1">
+          Categoría de emergencia
+        </h3>
+        <p class="text-xs text-slate-400 mb-5">Opcional para eventos normales. Al seleccionar un nivel se activa el sistema de matching automático.</p>
+
+        <div class="space-y-4">
+          <div>
+            <%= form.label :emergency_level, "Nivel de emergencia", class: "block text-xs font-semibold text-slate-600 mb-1.5" %>
+            <%= form.select :emergency_level,
+                  [["— Evento normal (sin emergencia) —", ""],
+                   ["T1 — Emergencia leve",     1],
+                   ["T2 — Emergencia moderada", 2],
+                   ["T3 — Emergencia media",    3],
+                   ["T4 — Emergencia alta",     4],
+                   ["T5 — Emergencia crítica",  5],
+                   ["T6 — Catástrofe",          6]],
+                  { selected: event.emergency_level },
+                  class: "w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-wine-300 focus:border-wine-400 transition",
+                  data: { "emergency-level-target": "levelSelect", action: "change->emergency-level#updateMinScore" } %>
+          </div>
+
+          <div>
+            <%= form.label :emergency_type, "Tipo de emergencia", class: "block text-xs font-semibold text-slate-600 mb-1.5" %>
+            <%= form.text_field :emergency_type, placeholder: "Ej: sismo, accidente vial, deslave...",
+                  class: "w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-wine-300 focus:border-wine-400 transition" %>
+          </div>
+
+          <div>
+            <%= form.label :min_score, "Score mínimo para convocatoria", class: "block text-xs font-semibold text-slate-600 mb-1.5" %>
+            <%= form.number_field :min_score, min: 1, max: 10, step: 0.5, placeholder: "Se autocompleta según nivel",
+                  class: "w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-wine-300 focus:border-wine-400 transition",
+                  data: { "emergency-level-target": "minScoreField" } %>
+            <p class="text-xs text-slate-400 mt-1">Solo voluntarios con score mayor o igual a este valor serán convocados.</p>
+          </div>
+
+          <div>
+            <p class="block text-xs font-semibold text-slate-600 mb-2">Habilidades requeridas</p>
+            <p class="text-xs text-slate-400 mb-3">Si no se selecciona ninguna, el matching usa solo score y ciudad.</p>
+            <div class="space-y-2">
+              <% VolunteerProfile::SKILL_LABELS.each do |key, label| %>
+                <label class="flex items-center gap-2.5 cursor-pointer group">
+                  <%= form.check_box :required_skills,
+                        { multiple: true, checked: Array(event.required_skills).include?(key),
+                          class: "rounded border-slate-300 text-wine-700 focus:ring-wine-400" },
+                        key, false %>
+                  <span class="text-sm text-slate-700 group-hover:text-slate-900"><%= label %></span>
+                </label>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <%# Resumen visual de thresholds %>
+      <div class="rounded-xl border border-slate-100 bg-slate-50 p-5">
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Referencia de scores por nivel</p>
+        <div class="space-y-1.5">
+          <% [[1,"T1","Leve","bg-green-100 text-green-800",4.0,2.0],[2,"T2","Moderada","bg-lime-100 text-lime-800",5.0,3.0],[3,"T3","Media","bg-yellow-100 text-yellow-800",5.5,4.0],[4,"T4","Alta","bg-orange-100 text-orange-800",6.5,5.0],[5,"T5","Crítica","bg-red-100 text-red-800",7.0,6.0],[6,"T6","Catástrofe","bg-rose-100 text-rose-900",8.0,7.0]].each do |lvl,tag,name,css,imm,sup| %>
+            <div class="flex items-center gap-2 text-xs">
+              <span class="rounded px-1.5 py-0.5 font-bold <%= css %> shrink-0 w-16 text-center"><%= tag %></span>
+              <span class="text-slate-500 flex-1"><%= name %></span>
+              <span class="text-slate-400">inmediato ≥<span class="font-semibold text-slate-700"><%= imm %></span></span>
+              <span class="text-slate-400">apoyo ≥<span class="font-semibold text-slate-700"><%= sup %></span></span>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
   </div>
 
-  <div>
-    <%= form.label :description, "Descripción", class: "block text-sm font-medium text-slate-700 mb-1" %>
-    <%= form.textarea :description, rows: 4, class: "w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-wine-300 focus:border-wine-400 transition" %>
-  </div>
-
-  <div>
-    <%= form.label :date, "Fecha y hora", class: "block text-sm font-medium text-slate-700 mb-1" %>
-    <%= form.datetime_field :date, class: "w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-wine-300 focus:border-wine-400 transition" %>
-  </div>
-
-  <div>
-    <%= form.label :location, "Ubicación", class: "block text-sm font-medium text-slate-700 mb-1" %>
-    <%= form.text_field :location, class: "w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-wine-300 focus:border-wine-400 transition" %>
-  </div>
-
-  <div>
-    <%= form.label :organization_id, "Organización", class: "block text-sm font-medium text-slate-700 mb-1" %>
-    <%= form.collection_select :organization_id, Organization.all, :id, :name,
-          { prompt: "Seleccioná una organización" },
-          class: "w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-wine-300 focus:border-wine-400 transition" %>
-  </div>
-
-  <div>
-    <%= form.label :status, "Estado", class: "block text-sm font-medium text-slate-700 mb-1" %>
-    <%= form.select :status, Event.statuses.keys.map { |s| [s.capitalize, s] },
-          { prompt: "Seleccioná un estado" },
-          class: "w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-wine-300 focus:border-wine-400 transition" %>
-  </div>
-
-  <div>
-    <%= form.submit class: "rounded-lg bg-wine-800 px-5 py-2 text-sm font-semibold text-white hover:bg-wine-700 transition-colors cursor-pointer" %>
+  <div class="flex justify-end gap-3 mt-6">
+    <%= link_to "Cancelar", events_path,
+          class: "rounded-lg border border-slate-200 px-5 py-2.5 text-sm text-slate-600 hover:bg-slate-50 transition-colors" %>
+    <%= form.submit class: "rounded-lg bg-wine-800 px-6 py-2.5 text-sm font-semibold text-white hover:bg-wine-700 transition-colors cursor-pointer shadow-sm" %>
   </div>
 <% end %>

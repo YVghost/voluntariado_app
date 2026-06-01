@@ -1,87 +1,120 @@
 <!DOCTYPE html>
 <html class="h-full bg-slate-50">
   <head>
-    <title>Voluntariado App</title>
+    <title>Voluntariado</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
-
     <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
-
   <body class="h-full font-sans text-slate-800 antialiased">
 
-    <%# Navbar %>
-    <header class="bg-wine-900 shadow-md">
-      <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-        <div class="flex h-16 items-center justify-between">
+    <header class="bg-wine-900 border-b border-wine-800 shadow-lg sticky top-0 z-50">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="flex h-16 items-center gap-8">
 
-          <%# Logo / Brand %>
-          <div class="flex items-center gap-2">
-            <span class="text-wine-300 text-xl font-bold tracking-tight">♦ Voluntariado</span>
-          </div>
+          <%# Logo %>
+          <a href="/" class="flex items-center gap-2 shrink-0 no-underline">
+            <div class="h-8 w-8 rounded-lg bg-wine-700 flex items-center justify-center">
+              <svg width="16" height="16" fill="white" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
+              </svg>
+            </div>
+            <span style="color: white; font-weight: 700; font-size: 1.125rem; letter-spacing: -0.025em;">Voluntariado</span>
+          </a>
 
           <%# Nav links %>
-          <nav class="flex items-center gap-6 text-sm font-medium">
+          <nav class="flex items-center gap-1 flex-1">
             <% if user_signed_in? %>
               <%= turbo_stream_from "notifications_#{current_user.id}" %>
-
               <% if current_user.admin? %>
-                <%= link_to "Admin", admin_dashboard_index_path,
-                      class: "rounded bg-wine-600 px-3 py-1 text-xs font-bold text-white hover:bg-wine-500 transition-colors" %>
+                <% admin_active = current_page?(admin_dashboard_index_path) %>
+                <%= link_to "⚙ Admin", admin_dashboard_index_path,
+                      style: admin_active ? "background:#7f1d1d; color:white;" : "color:#fca5a5;",
+                      class: "rounded-lg px-3 py-2 text-xs font-bold transition-colors hover:opacity-90" %>
               <% end %>
-              <%= link_to "Eventos", events_path,
-                    class: "text-slate-200 hover:text-white transition-colors" %>
-              <%= link_to "Organizaciones", organizations_path,
-                    class: "text-slate-200 hover:text-white transition-colors" %>
 
-              <%= link_to notifications_path,
-                    class: "relative text-slate-200 hover:text-white transition-colors" do %>
-                Notificaciones
+              <% events_active = current_page?(events_path) %>
+              <%= link_to "Eventos", events_path,
+                    style: events_active ? "background:#991b1b; color:white;" : "color:#fecaca;",
+                    class: "rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:opacity-90" %>
+
+              <% orgs_active = current_page?(organizations_path) %>
+              <%= link_to "Organizaciones", organizations_path,
+                    style: orgs_active ? "background:#991b1b; color:white;" : "color:#fecaca;",
+                    class: "rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:opacity-90" %>
+            <% end %>
+          </nav>
+
+          <%# Right side %>
+          <div class="flex items-center gap-3">
+            <% if user_signed_in? %>
+              <%# Notificaciones %>
+              <%= link_to notifications_path, class: "relative p-2 rounded-lg transition-colors hover:opacity-80" do %>
+                <span style="color:white; font-size:1.1rem;">🔔</span>
                 <span id="notifications_badge">
                   <% count = current_user.notifications.unread.count %>
                   <% if count > 0 %>
-                    <span class="ml-1 inline-flex items-center justify-center rounded-full bg-wine-500 px-2 py-0.5 text-xs font-bold text-white">
-                      <%= count %>
-                    </span>
+                    <span class="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-red-500 text-xs font-bold flex items-center justify-center leading-none" style="color:white;"><%= count > 9 ? "9+" : count %></span>
                   <% end %>
                 </span>
               <% end %>
 
-              <span class="text-slate-400 text-xs"><%= current_user.name %></span>
+              <%# Avatar + nombre %>
+              <%= link_to perfil_path, class: "flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:opacity-80" do %>
+                <div class="h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold" style="background:#7f1d1d; color:white; border:1px solid rgba(255,255,255,0.3);">
+                  <%= current_user.name&.first&.upcase || "?" %>
+                </div>
+                <span class="text-sm max-w-28 truncate hidden sm:block" style="color:#fecaca;"><%= current_user.name %></span>
+              <% end %>
 
               <%= button_to "Salir", destroy_user_session_path, method: :delete,
-                    class: "rounded bg-wine-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-wine-600 transition-colors cursor-pointer" %>
+                    style: "color:white; border:1px solid rgba(255,255,255,0.25); background:transparent; cursor:pointer;",
+                    class: "rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors hover:opacity-80" %>
             <% else %>
               <%= link_to "Iniciar sesión", new_user_session_path,
-                    class: "text-slate-200 hover:text-white transition-colors" %>
+                    style: "color:#fecaca;",
+                    class: "text-sm font-medium transition-colors hover:opacity-80" %>
               <%= link_to "Registrarse", new_user_registration_path,
-                    class: "rounded bg-wine-600 px-4 py-2 text-sm font-semibold text-white hover:bg-wine-500 transition-colors" %>
+                    style: "background:white; color:#7f1d1d;",
+                    class: "rounded-lg px-4 py-2 text-sm font-semibold transition-colors hover:opacity-90 shadow-sm" %>
             <% end %>
-          </nav>
+          </div>
 
         </div>
       </div>
     </header>
 
     <%# Flash messages %>
-    <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 pt-4 space-y-2">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-4 space-y-2">
       <% if notice %>
-        <div class="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
-          <span class="font-semibold">✓</span> <%= notice %>
+        <div class="flex items-center gap-3 rounded-xl border border-green-200 bg-green-50 border-l-4 border-l-green-500 pl-4 pr-5 py-3 text-sm text-green-800 shadow-sm">
+          <span class="shrink-0 text-green-600 font-bold">✓</span>
+          <%= notice %>
         </div>
       <% end %>
       <% if alert %>
-        <div class="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-          <span class="font-semibold">!</span> <%= alert %>
+        <div class="flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 border-l-4 border-l-red-500 pl-4 pr-5 py-3 text-sm text-red-800 shadow-sm">
+          <span class="shrink-0 text-red-600 font-bold">!</span>
+          <%= alert %>
         </div>
       <% end %>
     </div>
 
-    <%# Main content %>
-    <main class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-8">
+    <%# Banner perfil incompleto %>
+    <% if current_user&.voluntario? && !current_user.profile_complete? %>
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-3">
+        <div class="flex items-center justify-between rounded-xl border border-amber-300 bg-amber-50 border-l-4 border-l-amber-500 pl-4 pr-5 py-3 text-sm text-amber-900 shadow-sm">
+          <span>⚠ Completá tu perfil de habilidades para poder ser convocado en emergencias.</span>
+          <%= link_to "Completar perfil →", quiz_path,
+                class: "ml-4 shrink-0 rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-500 transition-colors" %>
+        </div>
+      </div>
+    <% end %>
+
+    <main class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
       <%= yield %>
     </main>
 

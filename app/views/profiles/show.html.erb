@@ -1,0 +1,176 @@
+<div class="mb-6 flex items-center justify-between">
+  <h1 class="text-2xl font-bold text-slate-900">Mi perfil</h1>
+  <div class="flex gap-2">
+    <%= link_to "Editar cuenta", edit_user_registration_path,
+          class: "rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors" %>
+    <% if current_user.voluntario? && !@profile&.quiz_completed_at %>
+      <%= link_to "Completar perfil", quiz_path,
+            class: "rounded-lg bg-wine-800 px-4 py-2 text-sm font-semibold text-white hover:bg-wine-700 transition-colors" %>
+    <% end %>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+  <%# Columna izquierda: datos del perfil %>
+  <div class="space-y-5">
+
+    <%# Datos básicos %>
+    <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div class="flex items-center gap-4 mb-4">
+        <div class="h-14 w-14 rounded-full bg-slate-100 flex items-center justify-center text-slate-700 font-bold text-xl">
+          <%= @user.name&.first&.upcase || "?" %>
+        </div>
+        <div>
+          <p class="font-semibold text-slate-900"><%= @user.name %></p>
+          <p class="text-xs text-slate-500"><%= @user.email %></p>
+          <span class="inline-block mt-1 rounded-full px-2 py-0.5 text-xs font-medium
+            <%= @user.admin?      ? 'bg-red-100 text-red-700' :
+                @user.organizador? ? 'bg-blue-100 text-blue-700' :
+                                     'bg-green-100 text-green-700' %>">
+            <%= @user.role.capitalize %>
+          </span>
+        </div>
+      </div>
+      <% if @user.cedula.present? %>
+        <p class="text-xs text-slate-400 font-mono">CI: <%= @user.cedula %></p>
+      <% end %>
+    </div>
+
+    <% if @user.voluntario? && @profile %>
+      <%# Score y disponibilidad %>
+      <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div class="flex items-center justify-between mb-3">
+          <p class="text-sm font-semibold text-slate-700">Puntuación</p>
+          <span class="text-2xl font-extrabold
+            <%= @profile.score >= 7 ? 'text-green-700' : @profile.score >= 5 ? 'text-yellow-600' : 'text-red-600' %>">
+            <%= @profile.score %><span class="text-sm font-normal text-slate-400">/10</span>
+          </span>
+        </div>
+        <div class="h-2 w-full rounded-full bg-slate-100 mb-4">
+          <div class="h-2 rounded-full transition-all
+            <%= @profile.score >= 7 ? 'bg-green-500' : @profile.score >= 5 ? 'bg-yellow-400' : 'bg-red-400' %>"
+            style="width: <%= (@profile.score / 10.0 * 100).round %>%"></div>
+        </div>
+
+        <div class="flex items-center justify-between text-xs">
+          <span class="<%= @profile.available? ? 'text-green-600' : 'text-slate-400' %> font-medium">
+            <%= @profile.available? ? "● Disponible" : "○ No disponible" %>
+          </span>
+          <%= button_to @profile.available? ? "Pausar" : "Activar",
+                toggle_availability_quiz_path, method: :patch,
+                class: "rounded px-2 py-1 text-xs font-medium cursor-pointer transition-colors " +
+                  (@profile.available? ? "bg-slate-100 text-slate-600 hover:bg-slate-200" : "bg-green-100 text-green-700 hover:bg-green-200") %>
+        </div>
+      </div>
+
+      <%# Skills %>
+      <% if @profile.skills.any? %>
+        <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <p class="text-sm font-semibold text-slate-700 mb-3">Habilidades activas</p>
+          <div class="space-y-2">
+            <% @profile.skills.each do |s| %>
+              <div class="flex items-center justify-between">
+                <span class="text-xs text-slate-600"><%= VolunteerProfile::SKILL_LABELS[s] || s %></span>
+                <% avg = @avg_scores&.dig("#{s}_score") %>
+                <% if avg %>
+                  <span class="text-xs font-semibold
+                    <%= avg >= 3 ? 'text-green-700' : avg >= 2 ? 'text-yellow-600' : 'text-slate-500' %>">
+                    ★ <%= avg %>
+                  </span>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+          <% if @total_reviews&.> 0 %>
+            <p class="text-xs text-slate-400 mt-3">Basado en <%= @total_reviews %> <%= @total_reviews == 1 ? 'evaluación' : 'evaluaciones' %></p>
+          <% end %>
+        </div>
+      <% end %>
+
+      <%# Ubicación %>
+      <% if @profile.city.present? %>
+        <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <p class="text-xs text-slate-400 mb-1">Ubicación registrada</p>
+          <p class="text-sm text-slate-700">
+            📍 <%= [@profile.sector, @profile.city, @profile.country].compact.reject(&:empty?).join(", ") %>
+          </p>
+        </div>
+      <% end %>
+    <% end %>
+
+  </div>
+
+  <%# Columna derecha: historial %>
+  <div class="lg:col-span-2 space-y-5">
+
+    <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+      <div class="px-5 py-4 border-b border-slate-100">
+        <h2 class="font-semibold text-slate-800">
+          Historial de participación
+          <span class="text-sm font-normal text-slate-400 ml-1">(<%= @participaciones.count %> eventos)</span>
+        </h2>
+      </div>
+
+      <% if @participaciones.empty? %>
+        <div class="p-10 text-center">
+          <p class="text-sm text-slate-400">Aún no participaste en ningún evento.</p>
+        </div>
+      <% else %>
+        <div class="divide-y divide-slate-100">
+          <% @participaciones.each do |enrollment| %>
+            <div class="px-5 py-4">
+              <div class="flex items-start justify-between gap-3 mb-2">
+                <div>
+                  <%= link_to enrollment.event.title, enrollment.event,
+                        class: "font-medium text-slate-800 hover:text-wine-800 transition-colors text-sm" %>
+                  <p class="text-xs text-slate-400 mt-0.5">
+                    <%= enrollment.event.organization.name %>
+                    · <%= enrollment.event.date&.strftime("%d/%m/%Y") %>
+                    <% if enrollment.event.emergency_level.present? %>
+                      · <span class="font-semibold text-orange-600">T<%= enrollment.event.emergency_level %></span>
+                    <% end %>
+                  </p>
+                </div>
+                <span class="shrink-0 rounded-full px-2 py-0.5 text-xs font-medium
+                  <%= enrollment.convocado?  ? 'bg-amber-100 text-amber-700'  :
+                      enrollment.confirmado? ? 'bg-blue-100 text-blue-700'    :
+                      enrollment.asistio?    ? 'bg-green-100 text-green-700'  :
+                                              'bg-slate-100 text-slate-500'   %>">
+                  <%= enrollment.status.capitalize %>
+                </span>
+              </div>
+
+              <%# Calificación recibida %>
+              <% if (review = enrollment.review) %>
+                <div class="mt-2 rounded-lg bg-slate-50 border border-slate-100 px-3 py-2">
+                  <div class="flex flex-wrap gap-3 mb-1">
+                    <% EnrollmentReview::SKILL_ATTRS.each do |attr| %>
+                      <% val = review.send(attr) %>
+                      <% if val && val > 0 %>
+                        <span class="text-xs text-slate-600">
+                          <span class="font-medium"><%= EnrollmentReview::SKILL_LABELS[attr].split(" ").first %></span>:
+                          <span class="font-semibold
+                            <%= val >= 3 ? 'text-green-700' : val >= 2 ? 'text-yellow-600' : 'text-slate-500' %>">
+                            <%= val %>/4
+                          </span>
+                        </span>
+                      <% end %>
+                    <% end %>
+                  </div>
+                  <% if review.comment.present? %>
+                    <p class="text-xs text-slate-500 italic">"<%= review.comment %>"</p>
+                    <p class="text-xs text-slate-400 mt-0.5">— <%= review.reviewer.name %></p>
+                  <% end %>
+                </div>
+              <% elsif enrollment.asistio? %>
+                <p class="text-xs text-slate-400 mt-1 italic">Pendiente de calificación</p>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+
+  </div>
+</div>

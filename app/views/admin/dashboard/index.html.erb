@@ -5,21 +5,41 @@
 
 <%# Estadísticas rápidas %>
 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-  <div class="rounded-xl bg-white border border-slate-200 p-4 shadow-sm">
-    <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Usuarios</p>
-    <p class="text-3xl font-bold text-slate-900 mt-1"><%= @users.count %></p>
+  <div class="rounded-xl bg-white border border-slate-200 p-5 shadow-sm flex items-center gap-4">
+    <div class="h-11 w-11 rounded-xl bg-wine-100 flex items-center justify-center shrink-0">
+      <svg width="20" height="20" class="h-5 w-5 text-wine-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+    </div>
+    <div>
+      <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Usuarios</p>
+      <p class="text-3xl font-bold text-slate-900 mt-0.5"><%= @users.count %></p>
+    </div>
   </div>
-  <div class="rounded-xl bg-white border border-slate-200 p-4 shadow-sm">
-    <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Organizaciones</p>
-    <p class="text-3xl font-bold text-slate-900 mt-1"><%= @organizations.count %></p>
+  <div class="rounded-xl bg-white border border-slate-200 p-5 shadow-sm flex items-center gap-4">
+    <div class="h-11 w-11 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
+      <svg width="20" height="20" class="h-5 w-5 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+    </div>
+    <div>
+      <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Organizaciones</p>
+      <p class="text-3xl font-bold text-slate-900 mt-0.5"><%= @organizations.count %></p>
+    </div>
   </div>
-  <div class="rounded-xl bg-white border border-slate-200 p-4 shadow-sm">
-    <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Eventos</p>
-    <p class="text-3xl font-bold text-slate-900 mt-1"><%= @events.count %></p>
+  <div class="rounded-xl bg-white border border-slate-200 p-5 shadow-sm flex items-center gap-4">
+    <div class="h-11 w-11 rounded-xl bg-green-100 flex items-center justify-center shrink-0">
+      <svg width="20" height="20" class="h-5 w-5 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+    </div>
+    <div>
+      <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Eventos</p>
+      <p class="text-3xl font-bold text-slate-900 mt-0.5"><%= @events.count %></p>
+    </div>
   </div>
-  <div class="rounded-xl bg-white border border-slate-200 p-4 shadow-sm">
-    <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Inscripciones</p>
-    <p class="text-3xl font-bold text-slate-900 mt-1"><%= @enrollments.count %></p>
+  <div class="rounded-xl bg-white border border-slate-200 p-5 shadow-sm flex items-center gap-4">
+    <div class="h-11 w-11 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
+      <svg width="20" height="20" class="h-5 w-5 text-amber-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+    </div>
+    <div>
+      <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Inscripciones</p>
+      <p class="text-3xl font-bold text-slate-900 mt-0.5"><%= @enrollments.count %></p>
+    </div>
   </div>
 </div>
 
@@ -32,7 +52,7 @@
         data-tabs-target="tab"
         data-tab="<%= tab %>"
         data-action="click->tabs#select"
-        class="px-5 py-3 text-sm border-b-2 transition-colors border-transparent text-slate-500">
+        class="px-5 py-3 text-sm font-medium border-b-2 transition-colors border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300">
         <%= label %>
       </button>
     <% end %>
@@ -149,7 +169,7 @@
   <div data-tabs-target="panel" data-tab="eventos" class="hidden">
     <div class="flex items-center justify-between mb-4">
       <h2 class="font-semibold text-slate-800">Eventos (<%= @events.count %>)</h2>
-      <%= link_to "＋ Nuevo evento", new_event_path,
+      <%= link_to "＋ Nuevo evento", new_admin_event_path,
             class: "rounded-lg bg-wine-800 px-3 py-1.5 text-xs font-semibold text-white hover:bg-wine-700 transition-colors" %>
     </div>
     <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
@@ -174,8 +194,10 @@
               <td class="px-4 py-3 text-slate-500 text-xs"><%= event.date&.strftime("%d/%m/%Y %H:%M") %></td>
               <td class="px-4 py-3">
                 <span class="rounded-full px-2 py-0.5 text-xs font-medium
-                  <%= event.activo? ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500' %>">
-                  <%= event.activo? ? "Activo" : "Finalizado" %>
+                  <%= event.activo?   ? 'bg-green-100 text-green-700' :
+                      event.en_curso? ? 'bg-amber-100 text-amber-700' :
+                                        'bg-slate-100 text-slate-500' %>">
+                  <%= event.activo? ? "Activo" : event.en_curso? ? "En curso" : "Finalizado" %>
                 </span>
               </td>
               <td class="px-4 py-3 text-slate-500"><%= event.enrollments.where.not(status: :cancelado).count %></td>
@@ -210,8 +232,7 @@
             <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Voluntario</th>
             <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Evento</th>
             <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Estado</th>
-            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Check-in</th>
-            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Ubicación</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Asistencia</th>
             <th class="px-4 py-3"></th>
           </tr>
         </thead>
@@ -225,21 +246,15 @@
               </td>
               <td class="px-4 py-3">
                 <span class="rounded-full px-2 py-0.5 text-xs font-medium
-                  <%= enrollment.inscrito?  ? 'bg-blue-100 text-blue-700'   :
-                      enrollment.asistio?   ? 'bg-green-100 text-green-700' :
-                                             'bg-slate-100 text-slate-400' %>">
+                  <%= enrollment.convocado?  ? 'bg-amber-100 text-amber-700'  :
+                      enrollment.confirmado? ? 'bg-blue-100 text-blue-700'    :
+                      enrollment.asistio?    ? 'bg-green-100 text-green-700'  :
+                                              'bg-slate-100 text-slate-400'  %>">
                   <%= enrollment.status %>
                 </span>
               </td>
               <td class="px-4 py-3 text-slate-500 text-xs">
-                <%= enrollment.check_in_time&.strftime("%d/%m %H:%M") || "—" %>
-              </td>
-              <td class="px-4 py-3 text-slate-400 text-xs font-mono">
-                <% if enrollment.latitude.present? %>
-                  <%= enrollment.latitude.round(4) %>, <%= enrollment.longitude.round(4) %>
-                <% else %>
-                  —
-                <% end %>
+                <%= enrollment.attended_at&.strftime("%d/%m %H:%M") || "—" %>
               </td>
               <td class="px-4 py-3">
                 <%= button_to "✕", destroy_enrollment_admin_dashboard_index_path(id: enrollment.id),

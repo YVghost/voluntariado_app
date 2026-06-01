@@ -1,0 +1,259 @@
+<div class="mb-8">
+  <h1 class="text-2xl font-bold text-slate-900">Perfil de habilidades</h1>
+  <% if @profile.quiz_completed_at.present? %>
+    <p class="text-sm text-slate-500 mt-1">
+      Completado el <%= @profile.quiz_completed_at.strftime("%d/%m/%Y") %>.
+      Tus habilidades activas se actualizan automáticamente con cada evento en que participás y las calificaciones recibidas.
+    </p>
+  <% else %>
+    <p class="text-sm text-slate-500 mt-1">Completá el cuestionario para ser considerado en convocatorias de emergencia. Se llena una única vez — respondé con honestidad.</p>
+  <% end %>
+</div>
+
+<% if @profile.errors.any? %>
+  <div class="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+    <% @profile.errors.full_messages.each do |msg| %><p><%= msg %></p><% end %>
+  </div>
+<% end %>
+
+<% if @profile.quiz_completed_at.present? %>
+
+  <%# Vista de solo lectura %>
+  <div class="space-y-5">
+
+    <%# Score y estado %>
+    <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div class="flex items-center justify-between mb-3">
+        <p class="text-sm font-semibold text-slate-700">Tu puntuación actual</p>
+        <span class="text-3xl font-extrabold
+          <%= @profile.score >= 7 ? 'text-green-700' : @profile.score >= 5 ? 'text-yellow-600' : 'text-red-600' %>">
+          <%= @profile.score %><span class="text-sm font-normal text-slate-400">/10</span>
+        </span>
+      </div>
+      <div class="h-2 w-full rounded-full bg-slate-100 mb-4">
+        <div class="h-2 rounded-full
+          <%= @profile.score >= 7 ? 'bg-green-500' : @profile.score >= 5 ? 'bg-yellow-400' : 'bg-red-400' %>"
+          style="width: <%= (@profile.score / 10.0 * 100).round %>%"></div>
+      </div>
+      <div class="flex items-center justify-between text-xs">
+        <span class="<%= @profile.available? ? 'text-green-600' : 'text-slate-400' %> font-medium">
+          <%= @profile.available? ? "● Disponible para emergencias" : "○ No disponible" %>
+        </span>
+        <%= button_to @profile.available? ? "Pausar disponibilidad" : "Activar disponibilidad",
+              toggle_availability_quiz_path, method: :patch,
+              class: "rounded px-3 py-1 text-xs font-medium cursor-pointer transition-colors " +
+                (@profile.available? ? "bg-slate-100 text-slate-600 hover:bg-slate-200" : "bg-green-100 text-green-700 hover:bg-green-200") %>
+      </div>
+    </div>
+
+    <%# Habilidades activas %>
+    <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <p class="text-sm font-semibold text-slate-700 mb-4">Habilidades activas</p>
+      <% if @profile.skills.any? %>
+        <div class="space-y-2">
+          <% VolunteerProfile::SKILLS.each do |skill| %>
+            <div class="flex items-center gap-3">
+              <% active = @profile.skills.include?(skill) %>
+              <span class="h-2 w-2 rounded-full flex-shrink-0 <%= active ? 'bg-green-500' : 'bg-slate-200' %>"></span>
+              <span class="text-sm <%= active ? 'text-slate-800 font-medium' : 'text-slate-400' %>">
+                <%= VolunteerProfile::SKILL_LABELS[skill] %>
+              </span>
+              <% unless active %>
+                <span class="text-xs text-slate-400 italic">(no activa)</span>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <p class="text-sm text-slate-400">Ninguna habilidad activa aún.</p>
+      <% end %>
+      <p class="text-xs text-slate-400 mt-4 border-t border-slate-100 pt-3">
+        Las habilidades se activan a partir de tu score en el cuestionario y se actualizan con las calificaciones que recibís de los organizadores.
+      </p>
+    </div>
+
+    <%# Ubicación %>
+    <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <p class="text-sm font-semibold text-slate-700 mb-3">Ubicación registrada</p>
+      <% if @profile.city.present? %>
+        <p class="text-sm text-slate-700">
+          📍 <%= [@profile.sector, @profile.city, @profile.country].compact.reject(&:empty?).join(", ") %>
+        </p>
+      <% else %>
+        <p class="text-sm text-slate-400">Sin ubicación registrada.</p>
+      <% end %>
+    </div>
+
+    <%# Certificaciones %>
+    <% certs = @profile.certifications.select { |_k, v| v.to_s == "1" } %>
+    <% if certs.any? %>
+      <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <p class="text-sm font-semibold text-slate-700 mb-3">Certificaciones registradas</p>
+        <div class="space-y-2">
+          <% certs.each do |key, _| %>
+            <% data = VolunteerProfile::CERTIFICATIONS[key] %>
+            <% next unless data %>
+            <div class="flex items-center gap-2 text-sm text-slate-700">
+              <span class="text-green-600">✓</span>
+              <%= data[:label] %>
+              <span class="text-xs text-slate-400">(+<%= data[:points] %> pts)</span>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+
+  </div>
+
+<% else %>
+
+  <%# Formulario editable — solo la primera vez %>
+  <%= form_with url: quiz_path, method: :patch, class: "space-y-8" do |f| %>
+
+    <div class="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800">
+      <strong>Importante:</strong> Este cuestionario se completa una única vez. Una vez enviado no podrás modificarlo — las actualizaciones futuras vienen de tu historial de participación y las calificaciones de los organizadores.
+    </div>
+
+    <%# Escala de referencia %>
+    <div class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-600">
+      <strong>Escala:</strong> 0 = Nunca | 1 = Algo | 2 = Con práctica | 3 = Con experiencia | 4 = Experto
+    </div>
+
+    <%
+      skill_sections = [
+        { key: "primeros_auxilios",        label: "Primeros Auxilios",          qs: [
+          ["q1",  "¿Sabés realizar RCP (reanimación cardiopulmonar) correctamente?"],
+          ["q2",  "¿Podés identificar y manejar una hemorragia grave en campo?"],
+          ["q3",  "¿Sabés inmovilizar fracturas con materiales improvisados?"],
+          ["q4",  "¿Conocés el manejo básico de quemaduras y heridas abiertas?"],
+          ["q5",  "¿Atendiste a personas en shock o con pérdida de consciencia?"],
+        ]},
+        { key: "busqueda_rescate",          label: "Búsqueda y Rescate",         qs: [
+          ["q6",  "¿Participaste en simulacros o rescates reales en espacios confinados?"],
+          ["q7",  "¿Sabés usar sistemas de cuerdas, arnés o equipo de altura básico?"],
+          ["q8",  "¿Podés orientarte y coordinar búsqueda en zonas sin señal?"],
+          ["q9",  "¿Conocés técnicas de extracción de víctimas de escombros sin agravar lesiones?"],
+          ["q10", "¿Sabés leer planos o mapas para coordinar operaciones de rescate?"],
+        ]},
+        { key: "apoyo_psicosocial",         label: "Apoyo Psicosocial",          qs: [
+          ["q11", "¿Acompañaste a personas en crisis emocional aguda o duelo?"],
+          ["q12", "¿Sabés aplicar técnicas básicas de primeros auxilios psicológicos (PAP)?"],
+          ["q13", "¿Podés mantener la calma y transmitirla en situaciones de caos colectivo?"],
+          ["q14", "¿Tenés experiencia trabajando con niños o adultos mayores en estado de shock?"],
+          ["q15", "¿Sabés identificar señales de trauma agudo que requieran derivación profesional?"],
+        ]},
+        { key: "logistica_abastecimiento",  label: "Logística y Abastecimiento", qs: [
+          ["q16", "¿Coordinaste distribución de alimentos, agua o medicamentos en emergencias?"],
+          ["q17", "¿Sabés organizar y gestionar albergues temporales o puntos de encuentro?"],
+          ["q18", "¿Tenés experiencia en inventario o control de donaciones en campo?"],
+          ["q19", "¿Podés conducir vehículos de carga o transportar materiales pesados?"],
+          ["q20", "¿Coordinaste voluntarios o equipos de trabajo en terreno?"],
+        ]},
+        { key: "maquinaria_construccion",   label: "Maquinaria / Construcción",  qs: [
+          ["q21", "¿Sabés operar retroexcavadora, minicargadora o maquinaria pesada similar?"],
+          ["q22", "¿Tenés conocimientos de estructuras para evaluar si una edificación es segura?"],
+          ["q23", "¿Podés manejar motosierra, generador eléctrico u equipo de corte?"],
+          ["q24", "¿Participaste en demolición controlada o remoción de escombros?"],
+          ["q25", "¿Tenés conocimientos de instalaciones básicas (agua, electricidad) en campamentos?"],
+        ]},
+      ]
+    %>
+
+    <% skill_sections.each do |section| %>
+      <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <h2 class="font-semibold text-slate-800 mb-4 pb-2 border-b border-slate-100">
+          <%= section[:label] %>
+        </h2>
+        <div class="space-y-5">
+          <% section[:qs].each do |qkey, qtext| %>
+            <div>
+              <p class="text-sm text-slate-700 mb-2"><%= qtext %></p>
+              <div class="flex gap-4">
+                <% [0, 1, 2, 3, 4].each do |val| %>
+                  <label class="flex items-center gap-1 text-xs text-slate-600 cursor-pointer">
+                    <input type="radio" name="quiz[<%= qkey %>]" value="<%= val %>"
+                      <%= (@profile.quiz_answers[qkey].to_i == val && @profile.quiz_answers[qkey]) ? "checked" : "" %>
+                      class="text-wine-800 focus:ring-wine-300" required>
+                    <%= val %>
+                  </label>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+
+    <%# Certificaciones %>
+    <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <h2 class="font-semibold text-slate-800 mb-4 pb-2 border-b border-slate-100">
+        Certificaciones y formación
+      </h2>
+      <p class="text-xs text-slate-500 mb-4">Marcá solo lo que podés demostrar si se te solicita.</p>
+      <div class="space-y-3">
+        <% VolunteerProfile::CERTIFICATIONS.each do |key, data| %>
+          <label class="flex items-start gap-3 cursor-pointer">
+            <input type="checkbox" name="certifications[<%= key %>]" value="1"
+              <%= @profile.certifications[key].to_s == "1" ? "checked" : "" %>
+              class="mt-0.5 rounded border-slate-300 text-wine-700 focus:ring-wine-400">
+            <span class="text-sm text-slate-700">
+              <%= data[:label] %>
+              <span class="text-xs text-slate-400">(+<%= data[:points] %> pts)</span>
+            </span>
+          </label>
+        <% end %>
+      </div>
+    </div>
+
+    <%# Dirección %>
+    <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"
+         data-controller="address-select">
+      <h2 class="font-semibold text-slate-800 mb-4 pb-2 border-b border-slate-100">
+        Tu ubicación habitual
+      </h2>
+      <p class="text-xs text-slate-500 mb-4">Usamos esto para conectarte con emergencias cercanas.</p>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">País</label>
+          <select name="country"
+                  data-address-select-target="country"
+                  data-action="change->address-select#loadCities"
+                  class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-wine-300 transition">
+            <option value="">Seleccioná un país</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Ciudad</label>
+          <select name="city"
+                  data-address-select-target="city"
+                  data-action="change->address-select#loadSectors"
+                  class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-wine-300 transition">
+            <option value="">— primero seleccioná un país —</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Sector / Barrio</label>
+          <select name="sector"
+                  data-address-select-target="sector"
+                  class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-wine-300 transition">
+            <option value="">— primero seleccioná una ciudad —</option>
+          </select>
+        </div>
+      </div>
+      <div data-address-select-target="currentValues"
+           data-country="<%= @profile.country %>"
+           data-city="<%= @profile.city %>"
+           data-sector="<%= @profile.sector %>"
+           class="hidden"></div>
+    </div>
+
+    <div class="flex justify-end gap-3">
+      <%= link_to "Cancelar", root_path,
+            class: "rounded-lg border border-slate-200 px-5 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors" %>
+      <%= f.submit "Completar perfil",
+            class: "rounded-lg bg-wine-800 px-6 py-2 text-sm font-semibold text-white hover:bg-wine-700 transition-colors cursor-pointer" %>
+    </div>
+
+  <% end %>
+
+<% end %>

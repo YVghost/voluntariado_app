@@ -2,20 +2,17 @@
 
 <%= render "events/event_header", event: @event %>
 
-<%# Botón finalizar (solo admin/organizador) %>
-<% if policy(@event).update? && @event.activo? %>
-  <div class="mb-6">
-    <%= button_to "Marcar como finalizado", finalizar_event_path(@event), method: :patch,
+<% if policy(@event).update? && (@event.activo? || @event.en_curso?) %>
+  <div class="mb-6 flex justify-end">
+    <%= button_to "✓ Marcar como finalizado", finalizar_event_path(@event), method: :patch,
         data: { turbo_confirm: "¿Marcar este evento como finalizado?" },
-        class: "rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer" %>
+        class: "rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-all cursor-pointer shadow-sm" %>
   </div>
 <% end %>
 
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-  <%# Columna izquierda: inscripción %>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
   <div class="lg:col-span-1">
-    <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       <h2 class="font-semibold text-slate-800 mb-4">Tu inscripción</h2>
       <%= render "events/enrollment_section",
             event: @event,
@@ -23,39 +20,60 @@
     </div>
   </div>
 
-  <%# Columna derecha: chat %>
   <div class="lg:col-span-2">
-    <div class="rounded-xl border border-slate-200 bg-white shadow-sm flex flex-col">
+    <div class="rounded-2xl border border-slate-200 bg-white shadow-sm flex flex-col h-full">
       <div class="px-5 py-4 border-b border-slate-100">
-        <h2 class="font-semibold text-slate-800">Chat del evento</h2>
+        <h2 class="font-semibold text-slate-800">💬 Chat del evento</h2>
       </div>
-
       <%= turbo_stream_from @event, :chat %>
-
-      <div id="messages" class="flex flex-col gap-3 p-5 min-h-48 max-h-96 overflow-y-auto">
+      <div id="messages" class="flex flex-col gap-3 p-5 min-h-48 max-h-80 overflow-y-auto">
         <%= render @event.messages.order(:created_at) %>
       </div>
-
       <div class="px-5 py-4 border-t border-slate-100">
         <%= render "events/message_form", event: @event %>
       </div>
     </div>
   </div>
-
 </div>
 
-<%# Acciones de admin %>
 <% if policy(@event).update? %>
-  <div class="mt-8 flex items-center gap-4 pt-6 border-t border-slate-200">
-    <%= link_to "Editar evento", edit_event_path(@event),
-          class: "text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors" %>
+  <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm mb-6">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="font-semibold text-slate-800">
+        👥 Voluntarios convocados
+        <span class="text-sm font-normal text-slate-400 ml-1">(<%= @event.enrollments.where.not(status: :cancelado).count %> total)</span>
+      </h2>
+    </div>
+    <div id="volunteers_list" class="divide-y divide-slate-100">
+      <% enrolled = @event.enrollments.includes(user: :volunteer_profile).where.not(status: :cancelado).order(:status) %>
+      <% if enrolled.any? %>
+        <%= render enrolled, event: @event %>
+      <% else %>
+        <div class="py-10 text-center">
+          <p class="text-sm text-slate-400">Aún no hay voluntarios convocados.</p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="flex items-center justify-between pt-4 border-t border-slate-200">
+    <div class="flex items-center gap-4">
+      <%= link_to "← Volver a eventos", events_path,
+            class: "text-sm text-slate-500 hover:text-slate-700 transition-colors" %>
+      <%= link_to "Editar evento", edit_event_path(@event),
+            class: "text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors" %>
+      <% if @event.finalizado? %>
+        <%= link_to "⭐ Calificar voluntarios", new_event_reviews_path(@event),
+              class: "text-sm font-semibold text-wine-700 hover:text-wine-900 transition-colors" %>
+      <% end %>
+    </div>
     <%= button_to "Eliminar evento", @event, method: :delete,
           data: { turbo_confirm: "¿Eliminar este evento permanentemente?" },
-          class: "text-sm font-medium text-red-600 hover:text-red-800 transition-colors cursor-pointer bg-transparent border-none" %>
+          class: "text-sm font-medium text-red-500 hover:text-red-700 transition-colors cursor-pointer bg-transparent border-none" %>
+  </div>
+<% else %>
+  <div class="mt-4">
+    <%= link_to "← Volver a eventos", events_path,
+          class: "text-sm text-slate-500 hover:text-slate-700 transition-colors" %>
   </div>
 <% end %>
-
-<div class="mt-4">
-  <%= link_to "← Volver a eventos", events_path,
-        class: "text-sm text-slate-500 hover:text-slate-700 transition-colors" %>
-</div>

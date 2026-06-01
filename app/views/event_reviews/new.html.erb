@@ -1,0 +1,91 @@
+<div class="mb-6 flex items-center gap-3">
+  <%= link_to "← Volver al evento", @event, class: "text-sm text-slate-500 hover:text-slate-700 transition-colors" %>
+  <h1 class="text-2xl font-bold text-slate-900">Calificar voluntarios</h1>
+</div>
+<p class="text-sm text-slate-500 mb-8">Evaluá el desempeño de cada voluntario que asistió. La escala es de 0 (no aplicó) a 4 (experto).</p>
+
+<% if @enrollments_to_review.empty? %>
+  <div class="rounded-2xl border-2 border-dashed border-slate-200 bg-white p-16 text-center">
+    <div class="mx-auto h-14 w-14 rounded-full bg-slate-100 flex items-center justify-center mb-4">
+      <svg class="h-7 w-7 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+    </div>
+    <p class="text-slate-500 font-medium">Sin voluntarios para calificar</p>
+    <p class="text-slate-400 text-sm mt-1">No hay voluntarios con asistencia registrada en este evento.</p>
+  </div>
+<% else %>
+  <%= form_with url: event_reviews_path(@event), method: :post, class: "space-y-6" do %>
+
+    <% @enrollments_to_review.each do |enrollment| %>
+      <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div class="flex items-center justify-between mb-6">
+          <div class="flex items-center gap-3">
+            <div class="h-10 w-10 rounded-full bg-wine-100 flex items-center justify-center text-sm font-bold text-wine-800 shrink-0">
+              <%= enrollment.user.name&.first&.upcase || "?" %>
+            </div>
+            <div>
+              <p class="font-semibold text-slate-800"><%= enrollment.user.name %></p>
+              <% if (vp = enrollment.user.volunteer_profile) %>
+                <div class="flex gap-1 mt-1 flex-wrap">
+                  <% vp.skills.each do |s| %>
+                    <span class="rounded-full bg-slate-100 border border-slate-200 px-2 py-0.5 text-xs text-slate-600">
+                      <%= VolunteerProfile::SKILL_LABELS[s] || s %>
+                    </span>
+                  <% end %>
+                </div>
+              <% end %>
+            </div>
+          </div>
+          <% if enrollment.review %>
+            <span class="rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700 flex items-center gap-1">
+              <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              Ya calificado
+            </span>
+          <% end %>
+        </div>
+
+        <% EnrollmentReview::SKILL_ATTRS.each do |attr| %>
+          <div class="mb-6">
+            <p class="text-sm font-semibold text-slate-700 mb-3"><%= EnrollmentReview::SKILL_LABELS[attr] %></p>
+            <div class="grid grid-cols-5 gap-2">
+              <% [
+                [0, "No aplicó",  "bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200"],
+                [1, "Básico",     "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100"],
+                [2, "Moderado",   "bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-100"],
+                [3, "Avanzado",   "bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100"],
+                [4, "Experto",    "bg-green-50 text-green-700 border-green-200 hover:bg-green-100"]
+              ].each do |val, label, classes| %>
+                <label class="relative cursor-pointer">
+                  <input type="radio"
+                    name="reviews[<%= enrollment.id %>][<%= attr %>]"
+                    value="<%= val %>"
+                    <%= enrollment.review&.send(attr) == val ? "checked" : (val == 0 && enrollment.review.nil? ? "checked" : "") %>
+                    class="sr-only peer">
+                  <div class="rounded-xl border-2 px-2 py-2.5 text-center transition-all peer-checked:ring-2 peer-checked:ring-wine-400 peer-checked:border-wine-400 peer-checked:bg-wine-50 peer-checked:text-wine-800 <%= classes %>">
+                    <p class="text-lg font-bold leading-none"><%= val %></p>
+                    <p class="text-xs mt-1 leading-tight"><%= label %></p>
+                  </div>
+                </label>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1.5">Comentario (opcional)</label>
+          <textarea name="reviews[<%= enrollment.id %>][comment]"
+            rows="2"
+            maxlength="500"
+            placeholder="Observaciones adicionales sobre el desempeño..."
+            class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-wine-300 focus:border-wine-400 transition resize-none"><%= enrollment.review&.comment %></textarea>
+        </div>
+      </div>
+    <% end %>
+
+    <div class="flex justify-end gap-3 pt-2">
+      <%= link_to "Cancelar", @event, class: "rounded-xl border border-slate-200 px-5 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors" %>
+      <button type="submit" class="rounded-xl bg-wine-800 px-6 py-2.5 text-sm font-semibold text-white hover:bg-wine-700 transition-colors cursor-pointer">
+        Guardar calificaciones
+      </button>
+    </div>
+  <% end %>
+<% end %>
