@@ -44,16 +44,10 @@ class VolunteerMatchingService
   private
 
   def candidate_profiles
-    profiles = VolunteerProfile
+    VolunteerProfile
       .includes(:user)
       .where(available: true)
       .where.not(quiz_completed_at: nil)
-
-    # Filtrar por ciudad si el evento la tiene
-    event_city = @event.city_from_location
-    profiles = profiles.where(city: event_city) if event_city.present?
-
-    profiles
   end
 
   def convoke!(profile, second_wave: false, conflict_message: nil)

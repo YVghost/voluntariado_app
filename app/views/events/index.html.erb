@@ -199,10 +199,13 @@
           <div class="flex items-start justify-between gap-3 mb-3">
             <h2 class="font-semibold text-base leading-snug line-clamp-2 text-slate-900"><%= event.title %></h2>
             <span class="shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold
-              <%= event.activo?   ? 'bg-green-100 text-green-800' :
-                  event.en_curso? ? 'bg-amber-100 text-amber-800' :
-                                    'bg-slate-100 text-slate-600' %>">
-              <%= event.activo? ? "Convocando" : event.en_curso? ? "En curso" : "Finalizado" %>
+              <%= event.activo?    ? 'bg-green-100 text-green-800' :
+                  event.en_curso?  ? 'bg-amber-100 text-amber-800' :
+                  event.cancelado? ? 'bg-red-100 text-red-700'     :
+                                     'bg-slate-100 text-slate-600' %>">
+              <%= event.activo?    ? "Convocando"  :
+                  event.en_curso?  ? "En curso"    :
+                  event.cancelado? ? "Cancelado"   : "Finalizado" %>
             </span>
           </div>
 

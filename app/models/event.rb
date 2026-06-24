@@ -5,7 +5,7 @@ class Event < ApplicationRecord
   has_many :users, through: :enrollments
   has_many :messages, dependent: :destroy
 
-  enum :status, { activo: 0, finalizado: 1, en_curso: 2 }
+  enum :status, { activo: 0, finalizado: 1, en_curso: 2, cancelado: 3 }
 
   EMERGENCY_LEVELS = (1..6).freeze
 
@@ -31,16 +31,13 @@ class Event < ApplicationRecord
   scope :en_curso_scope, -> { where(status: :en_curso) }
   scope :vigentes,       -> { where(status: [:activo, :en_curso]) }
   scope :proximos,       -> { where("date >= ?", Time.current).order(:date) }
+  scope :cancelados,     -> { where(status: :cancelado) }
 
-  def self.transicionar_a_en_curso!
-    where(status: :activo).where("date < ?", Time.current).update_all(status: 2)
-  end
-
-  # Eventos que llevan más de 3 días desde su fecha sin ser finalizados → finalizado automático
-  def self.auto_finalizar_expirados!
-    where(status: [:activo, :en_curso])
+  # Cancela eventos que nunca fueron iniciados y tienen más de 3 días desde su fecha
+  def self.auto_cancelar_no_iniciados!
+    where(status: :activo)
       .where("date < ?", 3.days.ago)
-      .update_all(status: 1)  # 1 = finalizado
+      .update_all(status: 3)  # 3 = cancelado
   end
 
   after_update_commit :broadcast_status_change, if: :saved_change_to_status?

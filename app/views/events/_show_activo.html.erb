@@ -1,0 +1,67 @@
+<%# ── Botón iniciar (solo org/admin) ── %>
+<% if policy(event).update? %>
+  <div class="mb-6 flex justify-end">
+    <%= button_to "▶ Iniciar evento", iniciar_event_path(event), method: :patch,
+        data: { turbo_confirm: "¿Confirmar inicio? Pasará al modo en curso y podrás tomar lista." },
+        class: "rounded-xl bg-wine-800 px-5 py-2.5 text-sm font-semibold text-white hover:bg-wine-700 transition-all cursor-pointer shadow-sm" %>
+  </div>
+<% end %>
+
+<%# ── Inscripción + chat ── %>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+  <div class="lg:col-span-1">
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <h2 class="font-semibold text-slate-800 mb-4">Tu inscripción</h2>
+      <%= render "events/enrollment_section",
+            event: event,
+            enrollment: event.enrollments.find_by(user: current_user) %>
+    </div>
+  </div>
+
+  <div class="lg:col-span-2">
+    <div class="rounded-2xl border border-slate-200 bg-white shadow-sm flex flex-col h-full">
+      <div class="px-5 py-4 border-b border-slate-100">
+        <h2 class="font-semibold text-slate-800">💬 Chat del evento</h2>
+      </div>
+      <%= turbo_stream_from event, :chat %>
+      <div id="messages" class="flex flex-col gap-3 p-5 min-h-48 max-h-80 overflow-y-auto">
+        <%= render event.messages.order(:created_at) %>
+      </div>
+      <div class="px-5 py-4 border-t border-slate-100">
+        <%= render "events/message_form", event: event %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%# ── Panel de voluntarios (solo org/admin) ── %>
+<% if policy(event).update? %>
+  <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm mb-6">
+    <h2 class="font-semibold text-slate-800 mb-4">
+      👥 Voluntarios convocados
+      <span class="text-sm font-normal text-slate-400 ml-1">(<%= event.enrollments.where.not(status: :cancelado).count %>)</span>
+    </h2>
+    <div id="volunteers_list" class="divide-y divide-slate-100">
+      <% enrolled = event.enrollments.includes(user: :volunteer_profile).where.not(status: :cancelado).order(:status) %>
+      <% if enrolled.any? %>
+        <%= render enrolled, event: event %>
+      <% else %>
+        <p class="text-sm text-slate-400 py-6 text-center">Aún no hay voluntarios convocados.</p>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="flex items-center justify-between pt-4 border-t border-slate-200">
+    <div class="flex items-center gap-4">
+      <%= link_to "← Volver a eventos", events_path, class: "text-sm text-slate-500 hover:text-slate-700 transition-colors" %>
+      <%= link_to "Editar evento", edit_event_path(event), class: "text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors" %>
+    </div>
+    <%= button_to "Eliminar evento", event, method: :delete,
+          data: { turbo_confirm: "¿Eliminar este evento permanentemente?" },
+          class: "text-sm font-medium text-red-500 hover:text-red-700 transition-colors cursor-pointer bg-transparent border-none" %>
+  </div>
+<% else %>
+  <div class="mt-4">
+    <%= link_to "← Volver a eventos", events_path, class: "text-sm text-slate-500 hover:text-slate-700 transition-colors" %>
+  </div>
+<% end %>

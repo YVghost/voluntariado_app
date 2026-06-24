@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_01_155727) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_01_172820) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -36,6 +36,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_01_155727) do
     t.datetime "created_at", null: false
     t.bigint "event_id", null: false
     t.datetime "expected_arrival"
+    t.float "score_snapshot"
     t.boolean "second_wave", default: false, null: false
     t.integer "status"
     t.datetime "updated_at", null: false
@@ -54,7 +55,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_01_155727) do
     t.integer "min_score", default: 3
     t.bigint "organization_id", null: false
     t.text "required_skills", default: [], array: true
-    t.integer "status"
+    t.integer "status", comment: "0=activo 1=finalizado 2=en_curso 3=cancelado"
     t.string "title"
     t.datetime "updated_at", null: false
     t.index ["organization_id"], name: "index_events_on_organization_id"

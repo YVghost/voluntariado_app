@@ -1,6 +1,6 @@
 class EventsController < ApplicationController
-  before_action :set_event, only: %i[ show edit update destroy finalizar ]
-  before_action :transicionar_eventos, only: %i[ index show ]
+  before_action :set_event, only: %i[ show edit update destroy iniciar finalizar ]
+  before_action :auto_cancelar_expirados, only: %i[ index show ]
 
   def index
     @events = policy_scope(Event)
@@ -72,10 +72,24 @@ class EventsController < ApplicationController
     redirect_to events_path, notice: "Evento eliminado.", status: :see_other
   end
 
+  def iniciar
+    authorize @event, :update?
+    if @event.activo?
+      @event.en_curso!
+      redirect_to @event, notice: "Evento iniciado. Podés empezar a marcar asistencia.", status: :see_other
+    else
+      redirect_to @event, alert: "El evento no puede iniciarse en su estado actual.", status: :see_other
+    end
+  end
+
   def finalizar
     authorize @event, :update?
-    @event.finalizado!
-    redirect_to @event, notice: "Evento finalizado.", status: :see_other
+    if @event.en_curso?
+      @event.finalizado!
+      redirect_to @event, notice: "Evento finalizado.", status: :see_other
+    else
+      redirect_to @event, alert: "Solo se puede finalizar un evento que esté en curso.", status: :see_other
+    end
   end
 
   private
@@ -88,9 +102,8 @@ class EventsController < ApplicationController
     event.organization = current_user.organization if current_user.organizador?
   end
 
-  def transicionar_eventos
-    Event.transicionar_a_en_curso!
-    Event.auto_finalizar_expirados!
+  def auto_cancelar_expirados
+    Event.auto_cancelar_no_iniciados!
   end
 
   def event_params

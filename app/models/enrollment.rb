@@ -10,5 +10,12 @@ class Enrollment < ApplicationRecord
   validates :event, presence: true
   validates :user_id, uniqueness: { scope: :event_id, message: "ya está inscrito en este evento" }
 
+  before_create :snapshot_volunteer_score
   after_create_commit -> { NotificationService.inscripcion_confirmada(self) }, if: :confirmado?
+
+  private
+
+  def snapshot_volunteer_score
+    self.score_snapshot = user.volunteer_profile&.score
+  end
 end

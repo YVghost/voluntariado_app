@@ -119,53 +119,81 @@
       <% else %>
         <div class="divide-y divide-slate-100">
           <% @participaciones.each do |enrollment| %>
-            <div class="px-5 py-4">
-              <div class="flex items-start justify-between gap-3 mb-2">
-                <div>
+            <% review = enrollment.review %>
+            <div class="px-5 py-5">
+
+              <%# ── Cabecera: título + metadatos + estado ── %>
+              <div class="flex items-start justify-between gap-3 mb-3">
+                <div class="min-w-0">
                   <%= link_to enrollment.event.title, enrollment.event,
-                        class: "font-medium text-slate-800 hover:text-wine-800 transition-colors text-sm" %>
-                  <p class="text-xs text-slate-400 mt-0.5">
-                    <%= enrollment.event.organization.name %>
-                    · <%= enrollment.event.date&.strftime("%d/%m/%Y") %>
+                        class: "font-semibold text-slate-900 hover:text-wine-800 transition-colors text-sm leading-snug" %>
+                  <div class="flex items-center gap-2 flex-wrap mt-1">
+                    <span class="text-xs text-slate-400"><%= enrollment.event.organization.name %></span>
+                    <span class="text-slate-300 text-xs">·</span>
+                    <span class="text-xs text-slate-400"><%= enrollment.event.date&.strftime("%d/%m/%Y") %></span>
                     <% if enrollment.event.emergency_level.present? %>
-                      · <span class="font-semibold text-orange-600">T<%= enrollment.event.emergency_level %></span>
+                      <span class="rounded-full px-2 py-0.5 text-xs font-bold
+                        <%= enrollment.event.emergency_level >= 5 ? 'bg-red-100 text-red-800' :
+                            enrollment.event.emergency_level >= 3 ? 'bg-orange-100 text-orange-800' :
+                                                                     'bg-yellow-100 text-yellow-800' %>">
+                        T<%= enrollment.event.emergency_level %>
+                      </span>
                     <% end %>
-                  </p>
+                  </div>
                 </div>
-                <span class="shrink-0 rounded-full px-2 py-0.5 text-xs font-medium
-                  <%= enrollment.convocado?  ? 'bg-amber-100 text-amber-700'  :
-                      enrollment.confirmado? ? 'bg-blue-100 text-blue-700'    :
-                      enrollment.asistio?    ? 'bg-green-100 text-green-700'  :
-                                              'bg-slate-100 text-slate-500'   %>">
+                <span class="shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold"
+                      style="<%= enrollment.asistio?    ? 'background:#dcfce7; color:#166534;' :
+                                 enrollment.confirmado? ? 'background:#dbeafe; color:#1d4ed8;' :
+                                 enrollment.convocado?  ? 'background:#fef3c7; color:#92400e;' :
+                                                          'background:#f1f5f9; color:#64748b;' %>">
                   <%= enrollment.status.capitalize %>
                 </span>
               </div>
 
-              <%# Calificación recibida %>
-              <% if (review = enrollment.review) %>
-                <div class="mt-2 rounded-lg bg-slate-50 border border-slate-100 px-3 py-2">
-                  <div class="flex flex-wrap gap-3 mb-1">
-                    <% EnrollmentReview::SKILL_ATTRS.each do |attr| %>
-                      <% val = review.send(attr) %>
-                      <% if val && val > 0 %>
-                        <span class="text-xs text-slate-600">
-                          <span class="font-medium"><%= EnrollmentReview::SKILL_LABELS[attr].split(" ").first %></span>:
-                          <span class="font-semibold
-                            <%= val >= 3 ? 'text-green-700' : val >= 2 ? 'text-yellow-600' : 'text-slate-500' %>">
-                            <%= val %>/4
-                          </span>
+              <% if review %>
+                <%# ── Score antes → después ── %>
+                <% if enrollment.score_snapshot.present? %>
+                  <% score_before = enrollment.score_snapshot %>
+                  <% score_after  = enrollment.user.volunteer_profile&.score %>
+                  <% delta = score_after ? (score_after - score_before).round(2) : nil %>
+                  <div class="flex items-center gap-2 flex-wrap mb-3 rounded-lg px-3 py-2"
+                       style="background:#f8fafc; border:1px solid #e2e8f0;">
+                    <span class="text-xs text-slate-500 font-medium">Score</span>
+                    <span class="rounded-md px-2 py-0.5 text-xs font-bold" style="background:#e2e8f0; color:#334155;">
+                      <%= score_before %>/10
+                    </span>
+                    <span class="text-slate-400 text-xs">→</span>
+                    <% if score_after %>
+                      <span class="rounded-md px-2 py-0.5 text-xs font-bold"
+                            style="background:<%= score_after >= 7 ? '#dcfce7' : score_after >= 5 ? '#fef9c3' : '#fee2e2' %>;
+                                   color:<%= score_after >= 7 ? '#166534' : score_after >= 5 ? '#854d0e' : '#991b1b' %>;">
+                        <%= score_after %>/10
+                      </span>
+                      <% if delta %>
+                        <span class="text-xs font-bold" style="color:<%= delta > 0 ? '#16a34a' : delta < 0 ? '#dc2626' : '#94a3b8' %>;">
+                          <%= delta > 0 ? "▲ +#{delta}" : delta < 0 ? "▼ #{delta}" : "sin cambio" %>
                         </span>
                       <% end %>
                     <% end %>
                   </div>
-                  <% if review.comment.present? %>
-                    <p class="text-xs text-slate-500 italic">"<%= review.comment %>"</p>
-                    <p class="text-xs text-slate-400 mt-0.5">— <%= review.reviewer.name %></p>
+                <% end %>
+
+                <%# ── Calificación por habilidad — una línea ── %>
+                <p class="text-xs text-slate-600 mb-2">
+                  <% EnrollmentReview::SKILL_ATTRS.each_with_index do |attr, i| %>
+                    <span class="font-medium text-slate-700"><%= EnrollmentReview::SKILL_LABELS[attr].split(" ").first %></span>: <%= review.send(attr) %>/4<%= i < EnrollmentReview::SKILL_ATTRS.size - 1 ? " &nbsp;·&nbsp; ".html_safe : "" %>
                   <% end %>
-                </div>
+                </p>
+
+                <%# ── Comentario ── %>
+                <% if review.comment.present? %>
+                  <p class="text-xs text-slate-500 italic">"<%= review.comment %>" <span class="not-italic text-slate-400">— <%= review.reviewer.name %></span></p>
+                <% end %>
+
               <% elsif enrollment.asistio? %>
-                <p class="text-xs text-slate-400 mt-1 italic">Pendiente de calificación</p>
+                <p class="text-xs text-slate-400 italic">Pendiente de calificación por la organización.</p>
               <% end %>
+
             </div>
           <% end %>
         </div>

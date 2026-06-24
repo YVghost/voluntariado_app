@@ -5,6 +5,12 @@
       Los organizadores y administradores gestionan inscripciones desde el panel del evento.
     </p>
 
+  <%# Evento cancelado %>
+  <% elsif event.cancelado? %>
+    <div class="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+      Este evento fue cancelado antes de iniciarse.
+    </div>
+
   <%# Evento finalizado %>
   <% elsif event.finalizado? %>
     <% if enrollment&.asistio? %>

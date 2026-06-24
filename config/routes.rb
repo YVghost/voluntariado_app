@@ -43,6 +43,7 @@ Rails.application.routes.draw do
 
   resources :events do
     member do
+      patch :iniciar
       patch :finalizar
     end
     resource :reviews, only: [:new, :create], controller: "event_reviews"

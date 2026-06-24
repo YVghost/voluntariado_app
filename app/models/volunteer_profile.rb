@@ -76,7 +76,8 @@ class VolunteerProfile < ApplicationRecord
       new_skill_scores[section] = (pct * 4).round(2)  # escala 0–4
       active_skills << section if pct >= 0.25
     end
-
+   ### formula de calculo de score 
+   ### base_score = (Σ (pct_sección × peso) / Σ pesos) × 10
     weight_sum = LEVEL_WEIGHTS.values.sum
     weighted   = raw_scores.sum { |section, pct| pct * LEVEL_WEIGHTS[section] }
     base_score = (weighted / weight_sum) * 10.0
@@ -107,31 +108,56 @@ class VolunteerProfile < ApplicationRecord
     reviews = EnrollmentReview.joins(:enrollment).where(enrollments: { user_id: user_id })
     return if reviews.empty?
 
+    # ── 1. Score del quiz calculado SIEMPRE desde quiz_answers originales ──
+    # (evita compounding: nunca usamos skill_scores almacenados como base)
+    quiz_raw = {}
+    if quiz_answers.present?
+      section_map = {
+        "primeros_auxilios"        => %w[q1 q2 q3 q4 q5],
+        "busqueda_rescate"         => %w[q6 q7 q8 q9 q10],
+        "apoyo_psicosocial"        => %w[q11 q12 q13 q14 q15],
+        "logistica_abastecimiento" => %w[q16 q17 q18 q19 q20],
+        "maquinaria_construccion"  => %w[q21 q22 q23 q24 q25]
+      }
+      section_map.each do |skill, questions|
+        total = questions.sum { |q| quiz_answers[q].to_i }
+        quiz_raw[skill] = (total.to_f / (questions.size * 4) * 4).round(2)  # escala 0–4
+      end
+    end
+
+    # ── 2. Promedio de reviews por skill — incluye ceros (0 = "No aplicó") ──
     review_avgs = {}
     SKILLS.each do |skill|
-      attr    = "#{skill}_score"
-      scores  = reviews.map(&attr.to_sym).compact.reject(&:zero?)
+      scores = reviews.map(&:"#{skill}_score").compact
       next if scores.empty?
       review_avgs[skill] = (scores.sum.to_f / scores.size).round(2)
     end
 
     return if review_avgs.empty?
 
-    # Blend: si hay dato de quiz usa 40/60, si no hay quiz usa 100% review
-    quiz_base = skill_scores.presence || {}
+    # ── 3. Mezcla limpia: 40% quiz_raw + 60% promedio reviews ──
     merged = SKILLS.each_with_object({}) do |skill, h|
-      q = quiz_base[skill].to_f
+      q = quiz_raw[skill].to_f
       r = review_avgs[skill]
-      h[skill] = if r
-                   q > 0 ? ((q * 0.4) + (r * 0.6)).round(2) : r
-                 else
-                   q
-                 end
+      h[skill] = r ? ((q * 0.4) + (r * 0.6)).round(2) : q
     end
 
     updated_skills = SKILLS.select { |s| merged[s].to_f >= 1.0 }
 
-    update_columns(skill_scores: merged, skills: updated_skills)
+    # ── 4. Score global desde skill_scores mezclados ──
+    weight_sum = LEVEL_WEIGHTS.values.sum
+    weighted   = merged.sum { |skill, val| (val.to_f / 4.0) * LEVEL_WEIGHTS[skill].to_f }
+    base_score = (weighted / weight_sum) * 10.0
+
+    # ── 5. Bonus certs proporcional al máximo posible, tope 2.0 puntos ──
+    # (evita que acumulación de certs anule el efecto de las calificaciones)
+    raw_cert  = certifications.to_h.sum { |k, v| v.to_s == "1" ? (CERTIFICATIONS[k]&.dig(:points) || 0) : 0 }
+    max_cert  = CERTIFICATIONS.values.sum { |v| v[:points] }
+    cert_bonus = max_cert > 0 ? (raw_cert.to_f / max_cert * 2.0).round(2) : 0.0
+
+    new_score = [base_score + cert_bonus, 10.0].min.round(2)
+
+    update_columns(score: new_score, skill_scores: merged, skills: updated_skills)
   end
 
   # ─────────────────────────────────────────────

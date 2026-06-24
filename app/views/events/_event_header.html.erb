@@ -33,10 +33,13 @@
         <h1 class="text-2xl font-bold text-slate-900"><%= event.title %></h1>
         <% if !event.emergency_level.present? || event.emergency_level < 3 %>
           <span class="rounded-full px-3 py-1 text-xs font-semibold
-            <%= event.finalizado? ? 'bg-slate-100 text-slate-600' :
-                event.en_curso?   ? 'bg-amber-100 text-amber-800' :
+            <%= event.finalizado? ? 'bg-slate-100 text-slate-600'  :
+                event.en_curso?   ? 'bg-amber-100 text-amber-800'  :
+                event.cancelado?  ? 'bg-red-100 text-red-700'      :
                                     'bg-green-100 text-green-800' %>">
-            <%= event.finalizado? ? "Finalizado" : event.en_curso? ? "En curso" : "Convocando" %>
+            <%= event.finalizado? ? "Finalizado" :
+                event.en_curso?   ? "En curso"   :
+                event.cancelado?  ? "Cancelado"  : "Convocando" %>
           </span>
           <% if event.emergency_level.present? %>
             <span class="rounded-full px-3 py-1 text-xs font-bold
