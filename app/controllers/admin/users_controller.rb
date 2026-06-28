@@ -6,7 +6,7 @@ class Admin::UsersController < Admin::BaseController
   end
 
   def create
-    @user = User.new(user_create_params)
+    @user = User.new(user_params)
 
     if @user.save
       redirect_to admin_dashboard_index_path(tab: "usuarios"), notice: "Usuario creado correctamente."
@@ -18,13 +18,10 @@ class Admin::UsersController < Admin::BaseController
   def edit; end
 
   def update
-    # Si el campo contraseña viene vacío, no lo actualizamos
-    update_params = user_update_params
-    if update_params[:password].blank?
-      update_params = update_params.except(:password, :password_confirmation)
-    end
+    attrs = user_params
+    attrs = attrs.except(:password, :password_confirmation) if attrs[:password].blank?
 
-    if @user.update(update_params)
+    if @user.update(attrs)
       redirect_to admin_dashboard_index_path(tab: "usuarios"), notice: "Usuario actualizado correctamente."
     else
       render :edit, status: :unprocessable_entity
@@ -37,14 +34,7 @@ class Admin::UsersController < Admin::BaseController
     @user = User.find(params[:id])
   end
 
-  def user_create_params
-    params.require(:user).permit(
-      :nombres, :apellidos, :cedula, :email, :role,
-      :password, :password_confirmation
-    )
-  end
-
-  def user_update_params
+  def user_params
     params.require(:user).permit(
       :nombres, :apellidos, :cedula, :email, :role,
       :password, :password_confirmation

@@ -63,19 +63,14 @@ class Users::RegistrationsController < Devise::RegistrationsController
     render :new, status: :unprocessable_entity
   end
 
-  def voluntario_params
+  def user_registration_params
     params.require(:user).permit(
       :email, :password, :password_confirmation,
       :nombres, :apellidos, :cedula
     )
   end
-
-  def representante_params
-    params.require(:user).permit(
-      :email, :password, :password_confirmation,
-      :nombres, :apellidos, :cedula
-    )
-  end
+  alias_method :voluntario_params, :user_registration_params
+  alias_method :representante_params, :user_registration_params
 
   def organizacion_params
     params.require(:organization).permit(:ruc, :name, :description, :location)

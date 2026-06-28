@@ -5,25 +5,7 @@ class EventsController < ApplicationController
   def index
     @events = policy_scope(Event)
     authorize Event
-
-    if current_user&.voluntario? && current_user.profile_complete?
-      profile = current_user.volunteer_profile
-
-      convocado_enrollments = current_user.enrollments
-                                          .joins(:event)
-                                          .where(status: :convocado)
-                                          .where(events: { status: [:activo, :en_curso] })
-
-      @convocados   = Event.where(id: convocado_enrollments.where(second_wave: false).select(:event_id))
-      @segunda_ola  = Event.where(id: convocado_enrollments.where(second_wave: true).select(:event_id))
-
-      enrolled_ids  = current_user.events.pluck(:id)
-      @disponibles  = Event.vigentes
-                           .where.not(id: enrolled_ids)
-                           .where.not(emergency_level: nil)
-                           .select { |e| profile.tier_for_event(e) == :support }
-                           .first(10)
-    end
+    load_volunteer_event_data if current_user&.voluntario? && current_user.profile_complete?
   end
 
   def show
@@ -104,6 +86,24 @@ class EventsController < ApplicationController
 
   def auto_cancelar_expirados
     Event.auto_cancelar_no_iniciados!
+  end
+
+  def load_volunteer_event_data
+    profile = current_user.volunteer_profile
+    convocado_enrollments = current_user.enrollments
+                                        .joins(:event)
+                                        .where(status: :convocado)
+                                        .where(events: { status: [:activo, :en_curso] })
+
+    @convocados  = Event.where(id: convocado_enrollments.where(second_wave: false).select(:event_id))
+    @segunda_ola = Event.where(id: convocado_enrollments.where(second_wave: true).select(:event_id))
+
+    enrolled_ids = current_user.events.pluck(:id)
+    @disponibles = Event.vigentes
+                        .where.not(id: enrolled_ids)
+                        .where.not(emergency_level: nil)
+                        .select { |e| profile.tier_for_event(e) == :support }
+                        .first(10)
   end
 
   def event_params

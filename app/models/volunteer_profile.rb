@@ -49,6 +49,14 @@ class VolunteerProfile < ApplicationRecord
 
   SECOND_WAVE_DAYS = 7
 
+  SECTION_MAP = {
+    "primeros_auxilios"        => %w[q1 q2 q3 q4 q5],
+    "busqueda_rescate"         => %w[q6 q7 q8 q9 q10],
+    "apoyo_psicosocial"        => %w[q11 q12 q13 q14 q15],
+    "logistica_abastecimiento" => %w[q16 q17 q18 q19 q20],
+    "maquinaria_construccion"  => %w[q21 q22 q23 q24 q25]
+  }.freeze
+
   # ─────────────────────────────────────────────
   # Cálculo de score desde quiz
   # ─────────────────────────────────────────────
@@ -56,19 +64,11 @@ class VolunteerProfile < ApplicationRecord
   def calculate_score!
     return unless quiz_answers.present?
 
-    section_map = {
-      "primeros_auxilios"        => %w[q1 q2 q3 q4 q5],
-      "busqueda_rescate"         => %w[q6 q7 q8 q9 q10],
-      "apoyo_psicosocial"        => %w[q11 q12 q13 q14 q15],
-      "logistica_abastecimiento" => %w[q16 q17 q18 q19 q20],
-      "maquinaria_construccion"  => %w[q21 q22 q23 q24 q25]
-    }
-
     raw_scores  = {}
     new_skill_scores = {}
     active_skills = []
 
-    section_map.each do |section, questions|
+    SECTION_MAP.each do |section, questions|
       total = questions.sum { |q| quiz_answers[q].to_i }
       max   = questions.size * 4
       pct   = total.to_f / max           # 0.0..1.0
@@ -112,14 +112,7 @@ class VolunteerProfile < ApplicationRecord
     # (evita compounding: nunca usamos skill_scores almacenados como base)
     quiz_raw = {}
     if quiz_answers.present?
-      section_map = {
-        "primeros_auxilios"        => %w[q1 q2 q3 q4 q5],
-        "busqueda_rescate"         => %w[q6 q7 q8 q9 q10],
-        "apoyo_psicosocial"        => %w[q11 q12 q13 q14 q15],
-        "logistica_abastecimiento" => %w[q16 q17 q18 q19 q20],
-        "maquinaria_construccion"  => %w[q21 q22 q23 q24 q25]
-      }
-      section_map.each do |skill, questions|
+      SECTION_MAP.each do |skill, questions|
         total = questions.sum { |q| quiz_answers[q].to_i }
         quiz_raw[skill] = (total.to_f / (questions.size * 4) * 4).round(2)  # escala 0–4
       end
@@ -159,7 +152,7 @@ class VolunteerProfile < ApplicationRecord
 
     update_columns(score: new_score, skill_scores: merged, skills: updated_skills)
   end
-
+ 
   # ─────────────────────────────────────────────
   # Tier del voluntario para un evento específico
   # Retorna :immediate, :support, o nil

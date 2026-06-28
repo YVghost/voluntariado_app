@@ -1,6 +1,4 @@
 module EcuadorValidations
-  extend ActiveSupport::Concern
-
   # Valida cédula ecuatoriana (10 dígitos)
   # Algoritmo módulo 10 del Registro Civil
   def self.cedula_valida?(cedula)

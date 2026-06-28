@@ -24,7 +24,7 @@ class Event < ApplicationRecord
   validates :location, presence: true
   validates :organization, presence: true
   validates :emergency_level, inclusion: { in: 1..6 }, allow_nil: true
-
+ 
   validate :date_cannot_be_in_the_past, on: :create
 
   scope :activos,        -> { where(status: :activo) }
@@ -37,7 +37,7 @@ class Event < ApplicationRecord
   def self.auto_cancelar_no_iniciados!
     where(status: :activo)
       .where("date < ?", 3.days.ago)
-      .update_all(status: 3)  # 3 = cancelado
+      .update_all(status: statuses[:cancelado])
   end
 
   after_update_commit :broadcast_status_change, if: :saved_change_to_status?
