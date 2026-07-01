@@ -68,4 +68,4 @@ end
 gem "devise", "~> 5.0"
 gem "pundit"
 
-gem "tailwindcss-rails", "~> 4.4"
+gem "tailwindcss-rails", "~> 4.6"
